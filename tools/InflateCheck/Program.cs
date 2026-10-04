@@ -1,6 +1,6 @@
 using System;
 
-namespace UfbxTests
+namespace Ufbx.NET.Tests
 {
     internal static class Program
     {

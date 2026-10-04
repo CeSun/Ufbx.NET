@@ -15,7 +15,7 @@
 
 ## 0. 总纲（不可改）
 
-- 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}` v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx`。
+- 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}` v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx.NET`。
 - **只读** `C:/Workspace/_analyze_ufbx`（共享参考树），任何插桩都在私有副本 `tools/_scratch/ufbx_dbg/` 做。
 - 每一波交付物 = **C oracle + C# 差分 harness + 变异对照（mutation controls）**，变异结束必须用 `cmp` 证明文件逐字节还原。
 - 盲区要分类：**equivalent-by-construction（等价于构造，论证写进 PORTING_NOTES）** 还是 **corpus/harness gap（语料或测具缺口，要补）**。
@@ -29,7 +29,7 @@
 
   ⚠️ 批 L 交接文档里写的是 `-mcpu=x86-64`，**那是笔误** —— zig 只认 `x86_64`，其余 oracle 文件头都是后者。
   触及 sin/cos/atan2/pow 的 oracle 追加 `-DUFBX_EXTERNAL_MATH` + `C:/Workspace/_analyze_ufbx/extra/ufbx_math.c`。
-- C# 构建：`dotnet build ufbx-cs.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`。
+- C# 构建：`dotnet build ufbx.net.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`。
 - ⚠️ **`perl` 已不在 PATH 上**，批 J/K 的 `tools/_mut_bake.sh` / `tools/_mut_createanim.sh` 现在会静默失败。
   变异脚本请照抄 **`tools/_mut_stream.sh`**（用 `python` 做**字节级**替换 + `cmp` 还原证明）；
   锚点备份放 `tools/_scratch/<basename>.bak`（现有：Bake/CreateAnim/Evaluate/SceneBuild/SceneUpdate/
@@ -134,8 +134,8 @@ static void ufbxi_thread_pool_execute(ufbxi_thread_pool *pool, uint32_t index) {
 
 1. **先复现第 2 节基线**，确认批 L 没有留下退化。
 2. 读 `COORDINATION.md` 批 L 一节 + `PORTING_NOTES.md` 规则 13（流族）与 #4/#7/#8/规则 12，
-   读 `src/Ufbx/Parse/Load.cs:718-741`、`src/Ufbx/Parse/Root.cs:300-330`、`src/Ufbx/Model/Opts/RuntimeOpts.cs:217-266`、
-   `src/Ufbx/Parse/ReadElement.cs:560-575`，**确认现有退化实现是否已经正确**，再动手。
+   读 `src/Ufbx.NET/Parse/Load.cs:718-741`、`src/Ufbx.NET/Parse/Root.cs:300-330`、`src/Ufbx.NET/Model/Opts/RuntimeOpts.cs:217-266`、
+   `src/Ufbx.NET/Parse/ReadElement.cs:560-575`，**确认现有退化实现是否已经正确**，再动手。
 3. 写 `tools/pool_oracle.c`（zig cc 按第 0 节唯一配置编译）+ `tools/pool_corpus.txt` + `tools/PoolCheck/`
    （C# 差分 harness，隔离 csproj 照抄 `tools/StreamCheck/StreamCheck.csproj`），
    在 `tools/_scratch/battery.sh` 加一行 `run pool ...`（**oracle/corpus 绝对路径都要传全** —— s3bc 那行曾因漏传 oracle 而 `exit=2`）。
@@ -181,6 +181,6 @@ static void ufbxi_thread_pool_execute(ufbxi_thread_pool *pool, uint32_t index) {
 ## 6. 上手第一件事
 
 读 `COORDINATION.md` 最新一节（批 L）+ `PORTING_NOTES.md` 规则 13 与 #3/#4/#7/#8/规则 12，
-读 `src/Ufbx/Parse/Load.cs:718-741`、`src/Ufbx/Parse/Root.cs:300-330`、
-`src/Ufbx/Model/Opts/RuntimeOpts.cs:217-266`、`src/Ufbx/Parse/ReadElement.cs:560-575`，
+读 `src/Ufbx.NET/Parse/Load.cs:718-741`、`src/Ufbx.NET/Parse/Root.cs:300-330`、
+`src/Ufbx.NET/Model/Opts/RuntimeOpts.cs:217-266`、`src/Ufbx.NET/Parse/ReadElement.cs:560-575`，
 然后从第 4 节第 1 步开始。**不要重写已有实现**，先确认它是否已经正确。

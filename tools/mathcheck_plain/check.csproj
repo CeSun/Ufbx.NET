@@ -8,8 +8,8 @@
     <RootNamespace>Check</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\Math\UfbxMath.cs" Link="UfbxMath.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxFma.cs" Link="UfbxFma.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxBitUtil.cs" Link="UfbxBitUtil.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxMath.cs" Link="UfbxMath.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxFma.cs" Link="UfbxFma.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxBitUtil.cs" Link="UfbxBitUtil.cs" />
   </ItemGroup>
 </Project>

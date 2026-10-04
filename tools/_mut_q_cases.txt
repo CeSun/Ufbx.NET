@@ -13,12 +13,12 @@
 #     分布在 172 个文件。
 #
 # tag	path	old	new
-Q_antipodal_off	src/Ufbx/Parse/Bake.cs	cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);	if (false) cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);
-Q_antipodal_inv	src/Ufbx/Math/Types.cs	if (Dot(q, reference) < 0.0)	if (Dot(q, reference) > 0.0)
-Q_pad_zero	src/Ufbx/Parse/Bake.cs	double padding = 0.5 / sampleRate;	double padding = 0.0;
-Q_stop_nopad	src/Ufbx/Parse/Bake.cs	double stop = bTime - padding;	double stop = bTime;
-Q_flat_noskip	src/Ufbx/Parse/Bake.cs	if (a.Value == b.Value && a.Right.Dy == 0.0f && b.Left.Dy == 0.0f) continue;	if (false) continue;
-Q_mindur_noskip	src/Ufbx/Parse/Bake.cs	if (duration <= minDuration) continue;	if (false) continue;
-Q_factor3	src/Ufbx/Parse/Bake.cs	factor *= 2.0;	factor *= 3.0;
-Q_start_noceil	src/Ufbx/Parse/Bake.cs	double start = UfbxMath.Ceil((aTime + padding) * sampleRate / factor) * factor;	double start = (aTime + padding) * sampleRate;
-Q_identity_pad	src/Ufbx/Parse/Bake.cs	double padding = 0.5 / sampleRate;	double padding = 0.5 / sampleRate;
+Q_antipodal_off	src/Ufbx.NET/Parse/Bake.cs	cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);	if (false) cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);
+Q_antipodal_inv	src/Ufbx.NET/Math/Types.cs	if (Dot(q, reference) < 0.0)	if (Dot(q, reference) > 0.0)
+Q_pad_zero	src/Ufbx.NET/Parse/Bake.cs	double padding = 0.5 / sampleRate;	double padding = 0.0;
+Q_stop_nopad	src/Ufbx.NET/Parse/Bake.cs	double stop = bTime - padding;	double stop = bTime;
+Q_flat_noskip	src/Ufbx.NET/Parse/Bake.cs	if (a.Value == b.Value && a.Right.Dy == 0.0f && b.Left.Dy == 0.0f) continue;	if (false) continue;
+Q_mindur_noskip	src/Ufbx.NET/Parse/Bake.cs	if (duration <= minDuration) continue;	if (false) continue;
+Q_factor3	src/Ufbx.NET/Parse/Bake.cs	factor *= 2.0;	factor *= 3.0;
+Q_start_noceil	src/Ufbx.NET/Parse/Bake.cs	double start = UfbxMath.Ceil((aTime + padding) * sampleRate / factor) * factor;	double start = (aTime + padding) * sampleRate;
+Q_identity_pad	src/Ufbx.NET/Parse/Bake.cs	double padding = 0.5 / sampleRate;	double padding = 0.5 / sampleRate;

@@ -9,7 +9,7 @@
 ## 必读（动手前按序读完，约定是硬性的）
 1. C:\Workspace\ufbx-cs\PORTING_NOTES.md 全文（命名/类型映射、行为保真、「C 指针序 ≡ 分配序」、DOM/数组约定、错误形态口径、禁止事项）
 2. C:\Workspace\ufbx-cs\COORDINATION.md 全文，重点最后三节（S1/S2 收口、错误形态审计、S3 开工）与本文件末尾的「既有接口速查」
-3. 已落地代码的实际形态：src/Ufbx/Parse/{SceneBuild.cs（S3a，已含 pre_finalize_scene/resolve_connections/linearize_nodes/fetch_*/sort_*/finalize_mesh，**直接调用**）、SceneOpts.cs（S4a：TransformToAxes/ScaleUnits/FindCubicBezierT/AxisMatrix/evaluate_skinning 已落地）、GeometryCache.cs（S4a：cache/external files）、Topology.cs + Subdivide.cs（S4c：compute_topology/generate_normal_mapping/compute_normals/tessellate/subdivide/generate_indices/**FinalizeMeshMaterial**）}、Parse/Load.cs（seam 在 `ufbxi_finalize_scene`）、Parse/UfbxiContext*.cs（partial 约定）
+3. 已落地代码的实际形态：src/Ufbx.NET/Parse/{SceneBuild.cs（S3a，已含 pre_finalize_scene/resolve_connections/linearize_nodes/fetch_*/sort_*/finalize_mesh，**直接调用**）、SceneOpts.cs（S4a：TransformToAxes/ScaleUnits/FindCubicBezierT/AxisMatrix/evaluate_skinning 已落地）、GeometryCache.cs（S4a：cache/external files）、Topology.cs + Subdivide.cs（S4c：compute_topology/generate_normal_mapping/compute_normals/tessellate/subdivide/generate_indices/**FinalizeMeshMaterial**）}、Parse/Load.cs（seam 在 `ufbxi_finalize_scene`）、Parse/UfbxiContext*.cs（partial 约定）
 
 ## 你的移植范围（C ufbx.c）
 ### A. S3b：19366-21643（场景终结中段）
@@ -28,16 +28,16 @@
 范围外（S4a/S4b，遇到就桩化+报告）：`ufbxi_update_scene_settings_obj`(23936)、cache/external files(23936-24953)、`ufbxi_evaluate_*`(26078+)。
 
 ## 文件所有权（只能写这些）
-- `src/Ufbx/Parse/SceneFinalize.cs`（新建；S3b 主体）
-- `src/Ufbx/Parse/UfbxiContext.SceneFinalize.cs`（新建，`internal sealed partial class UfbxiContext`，append 本模块字段；先读 Parse/UfbxiContext.cs 与既有 partial 避免重名）
-- `src/Ufbx/Parse/SceneUpdate.cs`（新建；S3c 主体）
-- `src/Ufbx/Parse/UfbxiContext.SceneUpdate.cs`（新建，同上）
+- `src/Ufbx.NET/Parse/SceneFinalize.cs`（新建；S3b 主体）
+- `src/Ufbx.NET/Parse/UfbxiContext.SceneFinalize.cs`（新建，`internal sealed partial class UfbxiContext`，append 本模块字段；先读 Parse/UfbxiContext.cs 与既有 partial 避免重名）
+- `src/Ufbx.NET/Parse/SceneUpdate.cs`（新建；S3c 主体）
+- `src/Ufbx.NET/Parse/UfbxiContext.SceneUpdate.cs`（新建，同上）
 - **允许改的既有文件（仅这三处，最小 diff）**：
-  - `src/Ufbx/Parse/Load.cs` 的 `UfbxiToplevel.SceneBuild` seam —— 按 C 的 `ufbxi_load_imp` 尾段（ufbx.c:25328-25353）把驱动序列接完整：
+  - `src/Ufbx.NET/Parse/Load.cs` 的 `UfbxiToplevel.SceneBuild` seam —— 按 C 的 `ufbxi_load_imp` 尾段（ufbx.c:25328-25353）把驱动序列接完整：
   `PreFinalizeScene(uc)` → `UfbxiSceneFinalize.FinalizeScene(uc)` → `UfbxiSceneUpdate.UpdateSceneSettings(uc.Scene.Settings)` →（OBJ 分支 `UpdateSceneSettingsObj`）→（opts.target_axes 有效则 `UfbxiSceneOpts.TransformToAxes`）→（opts.target_unit_meters > 0 则 `UfbxiSceneOpts.ScaleUnits`）→ `UfbxiSceneUpdate.UpdateAdjustTransforms` → `UfbxiSceneFinalize.ModifyGeometry(uc)` → `UfbxiSceneFinalize.PostprocessScene(uc)` → `UfbxiSceneUpdate.UpdateScene(uc.Scene, true, null, 0)` →（`!uc.Scene.Anim` 时补 zero anim）→（opts.load_external_files 则 `UfbxiGeometryCache.LoadExternalFiles`）→（opts.evaluate_skinning 则 `UfbxiSceneOpts.EvaluateSkinning(...)`，**先接 S4a 已有的方法**）→ 之后由编排者接 warnings/metadata 收尾。改动用 `cp` 备份 + `cmp` 确认只改这一处函数体。
-  - `src/Ufbx/Parse/SceneOpts.cs:161-164` 的 `AxisMatrix` 桩体 → 一行调用你在 SceneUpdate.cs 的实现（见上文「注意（三处接口）」）。
-  - `src/Ufbx/Parse/SceneOpts.cs:370` 的 `ufbx_compute_topology` 桩体 → `UfbxTopology.ComputeTopology(...)`。若 evaluate_skinning 主体还有别的 S4c 桩（`GenerateNormalMapping`/`ComputeNormals`），一并接上；接不上的在报告里列出。
-- **禁止改**：`SceneOpts.cs` 的**其余任何部分**（仅允许上述两处桩体；若发现 SceneOpts.cs 内还有别的桩属于你的范围，在报告里列出后由编排者决定）、SceneBuild.cs、GeometryCache.cs、Topology.cs、Subdivide.cs、ReadElement.cs、Root.cs、Geometry.cs、Objects.cs、Legacy.cs、AnimReader.cs、ObjLoader.cs、SceneFiles.cs、UfbxiContext.cs 本体、Model/**、Math/**、Util/**、tools/**、tests/**（`tests/Ufbx.Tests/SceneProvider.cs` 例外，见「验证 5」）。
+  - `src/Ufbx.NET/Parse/SceneOpts.cs:161-164` 的 `AxisMatrix` 桩体 → 一行调用你在 SceneUpdate.cs 的实现（见上文「注意（三处接口）」）。
+  - `src/Ufbx.NET/Parse/SceneOpts.cs:370` 的 `ufbx_compute_topology` 桩体 → `UfbxTopology.ComputeTopology(...)`。若 evaluate_skinning 主体还有别的 S4c 桩（`GenerateNormalMapping`/`ComputeNormals`），一并接上；接不上的在报告里列出。
+- **禁止改**：`SceneOpts.cs` 的**其余任何部分**（仅允许上述两处桩体；若发现 SceneOpts.cs 内还有别的桩属于你的范围，在报告里列出后由编排者决定）、SceneBuild.cs、GeometryCache.cs、Topology.cs、Subdivide.cs、ReadElement.cs、Root.cs、Geometry.cs、Objects.cs、Legacy.cs、AnimReader.cs、ObjLoader.cs、SceneFiles.cs、UfbxiContext.cs 本体、Model/**、Math/**、Util/**、tools/**、tests/**（`tests/Ufbx.NET.Tests/SceneProvider.cs` 例外，见「验证 5」）。
 - 若 S4a/S4c 文件里的桩需要接线（例如 `SceneOpts.cs:370` 的 `ufbx_compute_topology` 桩），**不要自己改**——在报告里列出「文件:行 → 应改为调用 `UfbxTopology.ComputeTopology(...)`」，由编排者统一接。
 
 ## 关键口径（违反必挂）
@@ -50,15 +50,15 @@
 - 每个函数注释标 ufbx.c 行号；netstandard2.1/C#9；禁止 record/init。
 
 ## 构建与验证（硬性）
-1. 构建：`dotnet build src/Ufbx/Ufbx.csproj -c Release` 0 warning 0 error；结束时 `dotnet build ufbx-cs.sln -c Release` 全绿。
+1. 构建：`dotnet build src/Ufbx.NET/Ufbx.NET.csproj -c Release` 0 warning 0 error；结束时 `dotnet build ufbx.net.sln -c Release` 全绿。
 2. **回归必须保持全绿**（改 seam 前先跑一次作基线，接线后再跑）：
    - `dotnet run --project tools/LoadCheck -c Release` ⇒ `LOAD CHECK PASS`、`divergent records: 0`
    - `dotnet run --project tools/GraphCheck -c Release -- tools/graph_oracle.txt` ⇒ FAIL 0（接线后 `stopped at ufbxi_pre/finalize_scene` 计数应显著下降，报告前后对比）
    - `dotnet run --project tools/DomCheck -c Release -- tools/dom_oracle.txt` ⇒ PASS（账本 6 条 KNOWN 不许删）
-   - `dotnet run --project tests/Ufbx.Tests -c Release -- mathvec tools/math_vectors.txt` ⇒ 72000/72000
+   - `dotnet run --project tests/Ufbx.NET.Tests -c Release -- mathvec tools/math_vectors.txt` ⇒ 72000/72000
 3. **自证 oracle（硬性）**：写 `tools/s3bc_oracle.c`（复用 `tools/s3_oracle.c` / `tools/s4a_oracle.c` 的 `#include "ufbx.c"` 骨架；编译必须 `zig cc -O2 -std=c11 -mcpu=x86_64 -ffp-contract=off -I C:/Workspace/_analyze_ufbx tools/s3bc_oracle.c -o tools/s3bc_oracle.exe`，**严禁**省略参数）对 ≥10 个真实文件（从 C:\Workspace\_analyze_ufbx\data 里挑 ASCII + 二进制 + 有纹理/材质的）dump：`fetch_maps` 后的 material.textures 顺序与文件内容列表、`finalize_scene` 后的 node 层级/顺序、`update_node` 的 local/world transform 位模式、`update_scene` 后 mesh 的几何变换结果（顶点 hex）。建隔离工程 `tools/S3bcCheck/`（模板抄 `tools/S4aCheck/`）逐位对拍，验收全过。
 4. **变异对照（≥1）**：改一处（如 `update_factor` 的权重顺序、或 `ordered_texture_less` 的比较方向）⇒ 你的 oracle 必须 FAIL，然后还原。
-5. **端到端首跑**：接线完成后，把 `tests/Ufbx.Tests/SceneProvider.cs` 的 `Load` 实现成镜像 `load_scene()`（C:\Workspace\_analyze_ufbx\test\hash_scene.c:97-146：opts 同上 + frame>0 走 `UfbxApi` 的 evaluate；文件里注释已写明契约）——**这是本任务唯一允许改的 tests/ 文件**，然后在 `dotnet run --project tests/Ufbx.Tests -c Release -- goldens tools/golden_hashes.txt` 上跑一次，把 **PASS/FAIL 计数与前 20 条不匹配样本**写进报告（未达 100% 是正常的，S4b evaluate 未落地；但 frame=0 的条目应当开始出现匹配，这是 S3c 正确性的最强信号）。
+5. **端到端首跑**：接线完成后，把 `tests/Ufbx.NET.Tests/SceneProvider.cs` 的 `Load` 实现成镜像 `load_scene()`（C:\Workspace\_analyze_ufbx\test\hash_scene.c:97-146：opts 同上 + frame>0 走 `UfbxApi` 的 evaluate；文件里注释已写明契约）——**这是本任务唯一允许改的 tests/ 文件**，然后在 `dotnet run --project tests/Ufbx.NET.Tests -c Release -- goldens tools/golden_hashes.txt` 上跑一次，把 **PASS/FAIL 计数与前 20 条不匹配样本**写进报告（未达 100% 是正常的，S4b evaluate 未落地；但 frame=0 的条目应当开始出现匹配，这是 S3c 正确性的最强信号）。
 
 ## 报告格式
 1. 实现函数清单（C# 名 ↔ ufbx.c 行号），分 S3b/S3c 两段；

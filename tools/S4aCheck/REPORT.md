@@ -8,7 +8,7 @@ external files）、24954-25211（axes/units/bezier/warning）、25063-25177（`
 
 ## 1. 实现清单（C# 名 ↔ ufbx.c 行）
 
-### 1.1 `src/Ufbx/Parse/GeometryCache.cs`（新增，1946 行）
+### 1.1 `src/Ufbx.NET/Parse/GeometryCache.cs`（新增，1946 行）
 
 XML 解析器（cache_load_xml 依赖，范围外但必须自带）：
 
@@ -84,7 +84,7 @@ geometry cache 采样 API（`UfbxiGeometryCacheSample`，25063 的 `evaluate_ski
 `UfbxiCacheXmlType`/`UfbxiCacheXmlFormat`(23975-23985)、`UfbxiCacheContext`(23987-24038)、
 `UfbxiExternalFileType`(24797-24799)、`UfbxiExternalFile`(24801-24808)。
 
-### 1.2 `src/Ufbx/Parse/SceneOpts.cs`（新增，587 行）
+### 1.2 `src/Ufbx.NET/Parse/SceneOpts.cs`（新增，587 行）
 
 | C# | ufbx.c |
 |---|---|
@@ -111,10 +111,10 @@ geometry cache 采样 API（`UfbxiGeometryCacheSample`，25063 的 `evaluate_ski
 | `AddBlendVertexOffsets` | 32091-32103 |
 | `ResolveWarningElements` | 25195-25210 |
 
-注：`ufbxi_fixup_opts_string`(25179-25193) 在 `src/Ufbx/Parse/Load.cs:549`（`UfbxiLoad.FixupOptsString`）
+注：`ufbxi_fixup_opts_string`(25179-25193) 在 `src/Ufbx.NET/Parse/Load.cs:549`（`UfbxiLoad.FixupOptsString`）
 已存在且被实际 load 路径调用（Load.cs:811-814）；为避免重复定义，本范围未再复制一份。
 
-### 1.3 `src/Ufbx/Parse/UfbxiContext.Cache.cs`（新增，27 行）
+### 1.3 `src/Ufbx.NET/Parse/UfbxiContext.Cache.cs`（新增，27 行）
 
 `internal sealed partial class UfbxiContext` 新增字段：
 
@@ -123,7 +123,7 @@ geometry cache 采样 API（`UfbxiGeometryCacheSample`，25063 的 `evaluate_ski
 
 字段名与其它 `UfbxiContext.<Module>.cs` 无冲突。
 
-### 1.4 `src/Ufbx/Api/UfbxGeometryCacheApi.cs`（新增，公开门面，只转发）
+### 1.4 `src/Ufbx.NET/Api/UfbxGeometryCacheApi.cs`（新增，公开门面，只转发）
 
 `ufbx.h:5711-5728` 的 6 个入口全部落到 1.1 的同一批 C 体上，转发层不含实现：
 
@@ -140,7 +140,7 @@ geometry cache 采样 API（`UfbxiGeometryCacheSample`，25063 的 `evaluate_ski
 C 的 `size_t` 返回值收窄成 `int`（PORTING_NOTES「size_t → int」）。`ufbx_{free,retain}_geometry_cache`
 是 `UfbxApi` 里有据可查的引用计数空操作。
 
-### 1.5 `src/Ufbx/Api/UfbxSkinApi.cs`（新增，公开门面，只转发）
+### 1.5 `src/Ufbx.NET/Api/UfbxSkinApi.cs`（新增，公开门面，只转发）
 
 `ufbx.h:5598-5622`「Skinning」一节的 7 个入口，函数体仍全部在 1.2 的 `UfbxiSceneOpts` 里：
 
@@ -210,7 +210,7 @@ DomCheck   -> DOM CHECK PASS    files=75   files with divergence=0  divergent re
 门面批 H 后补跑的整条回归（2026-10-04，会话 5）：
 
 ```
-dotnet build ufbx-cs.sln -c Release                0 警告 / 0 错误
+dotnet build ufbx.net.sln -c Release                0 警告 / 0 错误
 goldens tools/golden_hashes.txt                   2179 files, 2179 matched, 0 mismatched
 streamcheck                                        2243020 checks, 3 failed（既有 ErrorType 三条）
 S4aCheck tools/s4a_oracle.txt                      1086 / 1086, 0 fail
@@ -222,7 +222,7 @@ S3SceneCheck 13546/0 · NumericCheck 280169 · UtilCheck 6865 · HashCheck 79
 AnimCurveCheck 8000 · AsciiCheck 1737 · S2GeomCheck PASS
 ```
 
-模块本身编译：`dotnet build src/Ufbx/Ufbx.csproj -c Release` → **0 警告 0 错误**。
+模块本身编译：`dotnet build src/Ufbx.NET/Ufbx.NET.csproj -c Release` → **0 警告 0 错误**。
 
 ## 4. 变异测试
 
@@ -287,12 +287,12 @@ M6 顺带说明 endian swap 早已由 SMP 覆盖，本轮补的是 float/double 
 `UfbxiReaderNotPortedException` 精确桩出，并在桩文本里写明归属与行号：
 
 1. `UfbxiSceneOpts.AxisMatrix` → `throw new UfbxiReaderNotPortedException("s4a-ufbxi_axis_matrix (S3c-owned, ufbx.c:23659)")`
-   - 位置：`src/Ufbx/Parse/SceneOpts.cs:163`
+   - 位置：`src/Ufbx.NET/Parse/SceneOpts.cs:163`
    - 被 `TransformToAxes`(24954) 与 `UpdateAdjustTransforms`(S3c, 23682) 调用。
    - S3c 移植后：用真实实现替换此桩，其余调用点无需改动。
 2. `UfbxiSceneOpts.EvaluateSkinning` 内的 `ufbx_compute_topology` 调用点 →
    `throw new UfbxiReaderNotPortedException("s4a-ufbx_compute_topology (S4c-owned, ufbx.c:33176)")`
-   - 位置：`src/Ufbx/Parse/SceneOpts.cs:370`
+   - 位置：`src/Ufbx.NET/Parse/SceneOpts.cs:370`
    - 对应 C 的 `if (!cached_normals) { ufbx_compute_topology(...); ufbx_generate_normal_mapping(...); }`
      分支（仅当 mesh 无缓存法线、需要重算法线时进入）。S4c 移植 `ufbx_compute_topology`、
      `ufbx_generate_normal_mapping`(32588)、`ufbx_compute_normals`(32622) 后，用真实调用替换。

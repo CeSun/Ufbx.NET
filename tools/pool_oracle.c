@@ -12,8 +12,8 @@
 //   ufbxi_ascii_array_task_fn + its call site in the ASCII reader              (10145-10153, 10565-10657)
 //   ufbxi_read_objects_threaded                                                (15132-15237)
 //   ufbx_thread_pool_run_task / _set_user_ptr / _get_user_ptr                  (32984-32999)
-// The C# twin is src/Ufbx/Parse/ThreadPool.cs + src/Ufbx/Parse/Objects.cs +
-// src/Ufbx/Parse/{DomNode,AsciiDomNode}.cs + src/Ufbx/Api/UfbxApi.cs, replayed by tools/PoolCheck.
+// The C# twin is src/Ufbx.NET/Parse/ThreadPool.cs + src/Ufbx.NET/Parse/Objects.cs +
+// src/Ufbx.NET/Parse/{DomNode,AsciiDomNode}.cs + src/Ufbx.NET/Api/UfbxApi.cs, replayed by tools/PoolCheck.
 //
 // Compile (the only recognised configuration, see HANDOFF_batch_M.md section 0):
 //   zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off -DUFBX_EXTERNAL_MATH \

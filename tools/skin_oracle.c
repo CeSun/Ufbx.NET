@@ -12,8 +12,8 @@
 //   ufbx_add_blend_shape_vertex_offsets / _blend_vertex_offsets  (ufbx.c:32070-32103)
 //   ufbx_compute_topology / _generate_normal_mapping / _compute_normals (S4c, ufbx.c:33176 / 32588 / 32622)
 //   ufbxi_evaluate_scene / ufbxi_evaluate_imp                    (ufbx.c:26454-26491 / 26113-26452)
-// The C# twin is src/Ufbx/Parse/SceneOpts.cs (`UfbxiSceneOpts.EvaluateSkinning`) driven from
-// src/Ufbx/Parse/Load.cs:144-150 and src/Ufbx/Parse/EvaluateScene.cs, replayed by tools/SkinCheck.
+// The C# twin is src/Ufbx.NET/Parse/SceneOpts.cs (`UfbxiSceneOpts.EvaluateSkinning`) driven from
+// src/Ufbx.NET/Parse/Load.cs:144-150 and src/Ufbx.NET/Parse/EvaluateScene.cs, replayed by tools/SkinCheck.
 //
 // Compile (the only recognised configuration, see HANDOFF_batch_N.md section 0):
 //   zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off -DUFBX_EXTERNAL_MATH \

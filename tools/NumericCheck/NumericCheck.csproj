@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated differential verifier for the ported numeric text-to-double layer
-       (src/Ufbx/Parse/Numeric.cs), driven by the C oracle tools/numeric_oracle.c.
+       (src/Ufbx.NET/Parse/Numeric.cs), driven by the C oracle tools/numeric_oracle.c.
        EnableDefaultCompileItems=false with an explicit file list: it compiles only what
        Numeric.cs needs (UfbxBitUtil), so it still builds while Parse/Model are mid-flight
-       in other sessions. Deliberately not part of ufbx-cs.sln, as with tools/UtilCheck.
+       in other sessions. Deliberately not part of ufbx.net.sln, as with tools/UtilCheck.
        Run: dotnet run project tools/NumericCheck, configuration Release, argument
        tools/numeric_oracle.txt (reference values built with
        "zig cc -O2 -std=c11 -mcpu=x86_64 -ffp-contract=off"). -->
@@ -18,8 +18,8 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\Math\UfbxBitUtil.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\Numeric.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxBitUtil.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\Numeric.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

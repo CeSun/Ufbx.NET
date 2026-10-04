@@ -42,7 +42,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace S3DbgTrace
 {

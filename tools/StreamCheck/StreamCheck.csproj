@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for batch L (the stream / stdio / open ABI family). Not part of
-       ufbx-cs.sln. Replays the record stream of tools/stream_oracle.c (built with zig,
-       #include "ufbx.c") through src/Ufbx/Parse/StreamOpen.cs + Parse/InputStreams.cs +
+       ufbx.net.sln. Replays the record stream of tools/stream_oracle.c (built with zig,
+       #include "ufbx.c") through src/Ufbx.NET/Parse/StreamOpen.cs + Parse/InputStreams.cs +
        Api/UfbxApi.cs and compares every record of the grammar documented in the oracle header.
        Also serves as the mutation-test rig. -->
   <PropertyGroup>
@@ -19,8 +19,8 @@
     <NoWarn>CS0168;CS0219;CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
-    <Compile Include="..\..\tests\Ufbx.Tests\HashScene.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
+    <Compile Include="..\..\tests\Ufbx.NET.Tests\HashScene.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

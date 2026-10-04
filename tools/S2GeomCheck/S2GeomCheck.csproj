@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for the S2-geometry readers (Parse/Geometry.cs). Not part of
-       ufbx-cs.sln. Currently: drives UfbxiGeometry.ReadLine over the retained DOM of the two
+       ufbx.net.sln. Currently: drives UfbxiGeometry.ReadLine over the retained DOM of the two
        corpus files whose PointsIndex records the C oracle shows post-mutation
        (ufbxi_read_line rewrites the DOM-aliased buffer in place), re-emits the DomCheck `V`
        record for those nodes and diffs it against the oracle line. Also serves as the
@@ -18,7 +18,7 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

@@ -8,8 +8,8 @@
 //   ufbx_default_open_file() / ufbx_open_file()/_ctx() / ufbx_open_memory()/_ctx()  (30414-30503)
 //   ufbx_load_stream()/_prefix() / ufbx_load_stdio()/_prefix()                 (30536-30584)
 // plus the deferred open of `ufbxi_load_imp()` (ufbx.c:25216-25252) through `ufbx_load_file()`.
-// The C# twin is src/Ufbx/Parse/StreamOpen.cs + src/Ufbx/Parse/InputStreams.cs +
-// src/Ufbx/Api/UfbxApi.cs, replayed by tools/StreamCheck.
+// The C# twin is src/Ufbx.NET/Parse/StreamOpen.cs + src/Ufbx.NET/Parse/InputStreams.cs +
+// src/Ufbx.NET/Api/UfbxApi.cs, replayed by tools/StreamCheck.
 //
 // DESIGN: the variant table lives *only* here. Every variant re-emits what it handed to the ABI as
 // `I`/`Ip`/`Id`/`S` records, so the harness rebuilds the same payload, path, prefix and options

@@ -23,7 +23,7 @@ namespace AnimCurveCheck
 
             // C: a zeroed `ufbxi_context` with zeroed opts (the loader default,
             // `key_clamp_threshold` is never assigned by ufbxi_load()).
-            var uc = new Ufbx.UfbxiContext();
+            var uc = new Ufbx.NET.UfbxiContext();
 
             int total = 0, pass = 0;
             int byTagA = 0, byTagL = 0, byTagR = 0, byTagT = 0;
@@ -47,10 +47,10 @@ namespace AnimCurveCheck
                     float weightRight = ParseF32(t[9]);
                     float autoBias = ParseF32(t[10]);
                     uint expected = ParseU32(t[11]);
-                    float result = Ufbx.UfbxiAnimReader.SolveAutoTangent(uc,
+                    float result = Ufbx.NET.UfbxiAnimReader.SolveAutoTangent(uc,
                         prevTime, time, nextTime, prevValue, value, nextValue,
                         weightLeft, weightRight, autoBias, flags);
-                    ok = Ufbx.UfbxBitUtil.SingleToBits(result) == expected;
+                    ok = Ufbx.NET.UfbxBitUtil.SingleToBits(result) == expected;
                     break;
                 }
                 case "L": {
@@ -63,9 +63,9 @@ namespace AnimCurveCheck
                     float weightLeft = ParseF32(t[6]);
                     float autoBias = ParseF32(t[7]);
                     uint expected = ParseU32(t[8]);
-                    float result = Ufbx.UfbxiAnimReader.SolveAutoTangentLeft(uc,
+                    float result = Ufbx.NET.UfbxiAnimReader.SolveAutoTangentLeft(uc,
                         prevTime, time, prevValue, value, weightLeft, autoBias, flags);
-                    ok = Ufbx.UfbxBitUtil.SingleToBits(result) == expected;
+                    ok = Ufbx.NET.UfbxBitUtil.SingleToBits(result) == expected;
                     break;
                 }
                 case "R": {
@@ -78,9 +78,9 @@ namespace AnimCurveCheck
                     float weightRight = ParseF32(t[6]);
                     float autoBias = ParseF32(t[7]);
                     uint expected = ParseU32(t[8]);
-                    float result = Ufbx.UfbxiAnimReader.SolveAutoTangentRight(uc,
+                    float result = Ufbx.NET.UfbxiAnimReader.SolveAutoTangentRight(uc,
                         time, nextTime, value, nextValue, weightRight, autoBias, flags);
-                    ok = Ufbx.UfbxBitUtil.SingleToBits(result) == expected;
+                    ok = Ufbx.NET.UfbxBitUtil.SingleToBits(result) == expected;
                     break;
                 }
                 case "T": {
@@ -93,10 +93,10 @@ namespace AnimCurveCheck
                     bool edge = t[6] != "0";
                     uint expectedLeft = ParseU32(t[7]);
                     uint expectedRight = ParseU32(t[8]);
-                    Ufbx.UfbxiAnimReader.SolveTcb(out float outLeft, out float outRight,
+                    Ufbx.NET.UfbxiAnimReader.SolveTcb(out float outLeft, out float outRight,
                         tension, continuity, bias, slopeLeft, slopeRight, edge);
-                    ok = Ufbx.UfbxBitUtil.SingleToBits(outLeft) == expectedLeft
-                        && Ufbx.UfbxBitUtil.SingleToBits(outRight) == expectedRight;
+                    ok = Ufbx.NET.UfbxBitUtil.SingleToBits(outLeft) == expectedLeft
+                        && Ufbx.NET.UfbxBitUtil.SingleToBits(outRight) == expectedRight;
                     break;
                 }
                 default:
@@ -118,8 +118,8 @@ namespace AnimCurveCheck
         static uint ParseU32(string hex) => uint.Parse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
 
         static double ParseF64(string hex) =>
-            Ufbx.UfbxBitUtil.FromInt64(unchecked((long)ulong.Parse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture)));
+            Ufbx.NET.UfbxBitUtil.FromInt64(unchecked((long)ulong.Parse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture)));
 
-        static float ParseF32(string hex) => Ufbx.UfbxBitUtil.BitsToSingle(ParseU32(hex));
+        static float ParseF32(string hex) => Ufbx.NET.UfbxBitUtil.BitsToSingle(ParseU32(hex));
     }
 }

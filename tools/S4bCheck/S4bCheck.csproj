@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Isolated verification for the S4b-1 animation-evaluation module. Not part of ufbx-cs.sln.
+  <!-- Isolated verification for the S4b-1 animation-evaluation module. Not part of ufbx.net.sln.
        Replays the record stream of tools/s4b_oracle.c (built with zig, #include "ufbx.c") through
-       the ported evaluators in src/Ufbx/Parse/Evaluate.cs and compares FNV rollups per
+       the ported evaluators in src/Ufbx.NET/Parse/Evaluate.cs and compares FNV rollups per
        (file, time, kind). Also serves as the mutation-test rig (see the S4b report). -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -17,10 +17,10 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <!-- The scene hasher for the `V` records: the same transcription of test/hash_scene.h that the
-         golden acceptance run (tests/Ufbx.Tests) uses, so a `V` match is a golden match. -->
-    <Compile Include="..\..\tests\Ufbx.Tests\HashScene.cs" />
+         golden acceptance run (tests/Ufbx.NET.Tests) uses, so a `V` match is a golden match. -->
+    <Compile Include="..\..\tests\Ufbx.NET.Tests\HashScene.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

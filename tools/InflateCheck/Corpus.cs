@@ -20,9 +20,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
-namespace UfbxTests
+namespace Ufbx.NET.Tests
 {
     // Must match FNV_OFFSET / FNV_PRIME in tools/inflate_oracle.c.
     static class Fnv

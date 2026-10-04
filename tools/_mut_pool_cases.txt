@@ -11,66 +11,66 @@
 # Anchors are single-line by construction: the runner passes them as argv.
 
 # -- ufbxi_thread_pool_execute (ufbx.c:6009-6017)
-C_exec_nomod	src/Ufbx/Parse/ThreadPool.cs	            uint slot = index % NumTasks;	            uint slot = index;
-C_exec_success_bug	src/Ufbx/Parse/ThreadPool.cs	            if (task.Fn(task)) {	            if (task.Fn(task) && false) {
-Q_exec_error_empty	src/Ufbx/Parse/ThreadPool.cs	                task.Error = string.Empty;	                task.Error = "?";
-Q_exec_fn_guard	src/Ufbx/Parse/ThreadPool.cs	            UfbxiFail.CheckNoDesc(task.Fn != null, "imp->fn");	            UfbxiFail.CheckNoDesc(true, "imp->fn");
+C_exec_nomod	src/Ufbx.NET/Parse/ThreadPool.cs	            uint slot = index % NumTasks;	            uint slot = index;
+C_exec_success_bug	src/Ufbx.NET/Parse/ThreadPool.cs	            if (task.Fn(task)) {	            if (task.Fn(task) && false) {
+Q_exec_error_empty	src/Ufbx.NET/Parse/ThreadPool.cs	                task.Error = string.Empty;	                task.Error = "?";
+Q_exec_fn_guard	src/Ufbx.NET/Parse/ThreadPool.cs	            UfbxiFail.CheckNoDesc(task.Fn != null, "imp->fn");	            UfbxiFail.CheckNoDesc(true, "imp->fn");
 
 # -- ufbxi_thread_pool_init (ufbx.c:6067-6089)
-C_init_always	src/Ufbx/Parse/ThreadPool.cs	            if (pool == null || pool.RunFn == null || pool.WaitFn == null) return null;	            if (false) return null;
-C_numtasks_default	src/Ufbx/Parse/ThreadPool.cs	            if (numTasks == 0) numTasks = 2048;	            if (numTasks == 0) numTasks = 512;
-Q_numtasks_clamp	src/Ufbx/Parse/ThreadPool.cs	            if (numTasks > int.MaxValue) numTasks = int.MaxValue;	            if (false) numTasks = int.MaxValue;
-C_ctx_zero	src/Ufbx/Parse/ThreadPool.cs	            nint ctx = (nint)System.Threading.Interlocked.Increment(ref s_nextCtx);	            nint ctx = (nint)0;
-C_ctx_notregistered	src/Ufbx/Parse/ThreadPool.cs	            s_ctxs[ctx] = this;	            { }
+C_init_always	src/Ufbx.NET/Parse/ThreadPool.cs	            if (pool == null || pool.RunFn == null || pool.WaitFn == null) return null;	            if (false) return null;
+C_numtasks_default	src/Ufbx.NET/Parse/ThreadPool.cs	            if (numTasks == 0) numTasks = 2048;	            if (numTasks == 0) numTasks = 512;
+Q_numtasks_clamp	src/Ufbx.NET/Parse/ThreadPool.cs	            if (numTasks > int.MaxValue) numTasks = int.MaxValue;	            if (false) numTasks = int.MaxValue;
+C_ctx_zero	src/Ufbx.NET/Parse/ThreadPool.cs	            nint ctx = (nint)System.Threading.Interlocked.Increment(ref s_nextCtx);	            nint ctx = (nint)0;
+C_ctx_notregistered	src/Ufbx.NET/Parse/ThreadPool.cs	            s_ctxs[ctx] = this;	            { }
 
 # -- ufbxi_thread_pool_free (ufbx.c:6093-6108)
-C_free_no_wait	src/Ufbx/Parse/ThreadPool.cs	                WaitImp(Group, false);	                if (false) WaitImp(Group, false);
-C_free_no_freefn	src/Ufbx/Parse/ThreadPool.cs	            if (_opts != null && _opts.Pool != null && _opts.Pool.FreeFn != null) {	            if (false) {
-Q_free_enabled_check	src/Ufbx/Parse/ThreadPool.cs	            if (!Enabled) return;	            if (false) return;
-Q_ctx_no_remove	src/Ufbx/Parse/ThreadPool.cs	            s_ctxs.TryRemove(Ctx, out removed);	            if (false) s_ctxs.TryRemove(Ctx, out removed);
+C_free_no_wait	src/Ufbx.NET/Parse/ThreadPool.cs	                WaitImp(Group, false);	                if (false) WaitImp(Group, false);
+C_free_no_freefn	src/Ufbx.NET/Parse/ThreadPool.cs	            if (_opts != null && _opts.Pool != null && _opts.Pool.FreeFn != null) {	            if (false) {
+Q_free_enabled_check	src/Ufbx.NET/Parse/ThreadPool.cs	            if (!Enabled) return;	            if (false) return;
+Q_ctx_no_remove	src/Ufbx.NET/Parse/ThreadPool.cs	            s_ctxs.TryRemove(Ctx, out removed);	            if (false) s_ctxs.TryRemove(Ctx, out removed);
 
 # -- ring protocol
-C_avail_tasks	src/Ufbx/Parse/ThreadPool.cs	            return NumTasks - (StartIndex - WaitIndex);	            return NumTasks;
-C_create_no_ring_check	src/Ufbx/Parse/ThreadPool.cs	            if (index - WaitIndex >= NumTasks) {	            if (false) {
-Q_create_index_max	src/Ufbx/Parse/ThreadPool.cs	            } else if (index == int.MaxValue) {	            } else if (false) {
-Q_create_memset	src/Ufbx/Parse/ThreadPool.cs	            if (index < NumTasks) {	            if (false) {
-C_flush_no_advance	src/Ufbx/Parse/ThreadPool.cs	            Group = (group + 1) % GroupCount;	            if (false) Group = (group + 1) % GroupCount;
-C_flush_no_maxindex	src/Ufbx/Parse/ThreadPool.cs	                Groups[group].MaxIndex = startIndex + count;	                if (false) Groups[group].MaxIndex = startIndex + count;
-C_group_count	src/Ufbx/Parse/ThreadPool.cs	        internal const uint GroupCount = 4;	        internal const uint GroupCount = 2;
+C_avail_tasks	src/Ufbx.NET/Parse/ThreadPool.cs	            return NumTasks - (StartIndex - WaitIndex);	            return NumTasks;
+C_create_no_ring_check	src/Ufbx.NET/Parse/ThreadPool.cs	            if (index - WaitIndex >= NumTasks) {	            if (false) {
+Q_create_index_max	src/Ufbx.NET/Parse/ThreadPool.cs	            } else if (index == int.MaxValue) {	            } else if (false) {
+Q_create_memset	src/Ufbx.NET/Parse/ThreadPool.cs	            if (index < NumTasks) {	            if (false) {
+C_flush_no_advance	src/Ufbx.NET/Parse/ThreadPool.cs	            Group = (group + 1) % GroupCount;	            if (false) Group = (group + 1) % GroupCount;
+C_flush_no_maxindex	src/Ufbx.NET/Parse/ThreadPool.cs	                Groups[group].MaxIndex = startIndex + count;	                if (false) Groups[group].MaxIndex = startIndex + count;
+C_group_count	src/Ufbx.NET/Parse/ThreadPool.cs	        internal const uint GroupCount = 4;	        internal const uint GroupCount = 2;
 
 # -- wait
 # NOTE: `if (!WaitImp(Group, true)) ...` is NOT a usable anchor -- WaitAll's copy differs only by
 # indentation, so it matches as a substring (2 occurrences). The `can_fail` arm of
 # ufbxi_thread_pool_wait_imp (ufbx.c:6042) is the same rule and is unique.
-C_wait_cannotfail	src/Ufbx/Parse/ThreadPool.cs	            if (Failed && canFail) {	            if (false) {
-C_wait_no_waitfn	src/Ufbx/Parse/ThreadPool.cs	                    pool.WaitFn(pool.User, Ctx, group, maxIndex);	                    if (false) pool.WaitFn(pool.User, Ctx, group, maxIndex);
-C_wait_no_update	src/Ufbx/Parse/ThreadPool.cs	            UpdateFinished(maxIndex);	            if (false) UpdateFinished(maxIndex);
-C_update_desc_empty	src/Ufbx/Parse/ThreadPool.cs	                if (!Failed && task.Error != null) {	                if (!Failed && false) {
-C_wait_desc	src/Ufbx/Parse/ThreadPool.cs	                    if (error != null) error.Description = ErrorDesc;	                    if (error != null) error.Description = "X";
+C_wait_cannotfail	src/Ufbx.NET/Parse/ThreadPool.cs	            if (Failed && canFail) {	            if (false) {
+C_wait_no_waitfn	src/Ufbx.NET/Parse/ThreadPool.cs	                    pool.WaitFn(pool.User, Ctx, group, maxIndex);	                    if (false) pool.WaitFn(pool.User, Ctx, group, maxIndex);
+C_wait_no_update	src/Ufbx.NET/Parse/ThreadPool.cs	            UpdateFinished(maxIndex);	            if (false) UpdateFinished(maxIndex);
+C_update_desc_empty	src/Ufbx.NET/Parse/ThreadPool.cs	                if (!Failed && task.Error != null) {	                if (!Failed && false) {
+C_wait_desc	src/Ufbx.NET/Parse/ThreadPool.cs	                    if (error != null) error.Description = ErrorDesc;	                    if (error != null) error.Description = "X";
 
 # -- the public ABIs (ufbx.c:32984-32999)
-C_api_index_plus1	src/Ufbx/Api/UfbxApi.cs	            pool.Execute(index);	            pool.Execute(index + 1);
-C_userptr_set_sink	src/Ufbx/Api/UfbxApi.cs	            pool.UserPtr = userPtr;	            { }
-C_userptr_get_null	src/Ufbx/Api/UfbxApi.cs	            return pool.UserPtr;	            return null;
+C_api_index_plus1	src/Ufbx.NET/Api/UfbxApi.cs	            pool.Execute(index);	            pool.Execute(index + 1);
+C_userptr_set_sink	src/Ufbx.NET/Api/UfbxApi.cs	            pool.UserPtr = userPtr;	            { }
+C_userptr_get_null	src/Ufbx.NET/Api/UfbxApi.cs	            return pool.UserPtr;	            return null;
 
 # -- ufbxi_read_objects_threaded (ufbx.c:15132-15237)
-C_batch_waitgroup	src/Ufbx/Parse/Objects.cs	                pool.WaitGroup();	                if (false) pool.WaitGroup();
-C_batch_flush	src/Ufbx/Parse/Objects.cs	                pool.FlushGroup();	                if (false) pool.FlushGroup();
+C_batch_waitgroup	src/Ufbx.NET/Parse/Objects.cs	                pool.WaitGroup();	                if (false) pool.WaitGroup();
+C_batch_flush	src/Ufbx.NET/Parse/Objects.cs	                pool.FlushGroup();	                if (false) pool.FlushGroup();
 # Q after measurement, not by design: the batch loop above already waits every group -- it only
 # stops after GROUPS consecutive empty batches, by which point each group's `wait_index` equals
 # its `max_index`, so `ufbxi_thread_pool_wait_all()` (ufbx.c:15232) has nothing left to do for a
 # driver that runs everything inline. Real concurrency would make it observable.
-Q_batch_waitall	src/Ufbx/Parse/Objects.cs	            pool.WaitAll();	            if (false) pool.WaitAll();
-C_batch_maxtasks	src/Ufbx/Parse/Objects.cs	                    uint maxTasks = pool.NumTasks / groupCount;	                    uint maxTasks = pool.NumTasks;
-C_owned_node	src/Ufbx/Parse/Root.cs	                if (owned || dst == null) {	                if (dst == null) {
+Q_batch_waitall	src/Ufbx.NET/Parse/Objects.cs	            pool.WaitAll();	            if (false) pool.WaitAll();
+C_batch_maxtasks	src/Ufbx.NET/Parse/Objects.cs	                    uint maxTasks = pool.NumTasks / groupCount;	                    uint maxTasks = pool.NumTasks;
+C_owned_node	src/Ufbx.NET/Parse/Root.cs	                if (owned || dst == null) {	                if (dst == null) {
 
 # -- the two task producers
-C_deflate_no_task	src/Ufbx/Parse/DomNode.cs	                    deflateTask = uc.ThreadPool.CreateTask(DeflateTaskFn);	                    deflateTask = null;
+C_deflate_no_task	src/Ufbx.NET/Parse/DomNode.cs	                    deflateTask = uc.ThreadPool.CreateTask(DeflateTaskFn);	                    deflateTask = null;
 # Q after measurement: `ufbx_inflate()` returns -28 only when a progress callback cancels
 # (ufbx.c:8935), and `ufbxi_deflate_task_fn()` always runs with `input.progress_cb.fn == NULL`
 # (8918-8927), so the "Cancelled" text of the task is unreachable from any load.
-Q_deflate_err_text	src/Ufbx/Parse/DomNode.cs	            if (res == -28) { error = "Cancelled"; return false; }	            if (res == -28) { error = "X"; return false; }
-C_ascii_threshold	src/Ufbx/Parse/AsciiDomNode.cs	        const long MinThreadedAsciiValues = 64;	        const long MinThreadedAsciiValues = 4;
-C_ascii_task_offset	src/Ufbx/Parse/AsciiDomNode.cs	                        t.ArrDataOffset = (int)numValues * arrElemSize;	                        t.ArrDataOffset = 0;
-C_ascii_no_run	src/Ufbx/Parse/AsciiDomNode.cs	                            uc.ThreadPool.RunTask(task);	                            if (false) uc.ThreadPool.RunTask(task);
-Q_ascii_inline_fallback	src/Ufbx/Parse/AsciiDomNode.cs	                            UfbxiFail.CheckMsg(UfbxiAscii.ArrayTaskImp(t), "Threaded ASCII parse error");	                            UfbxiFail.CheckMsg(UfbxiAscii.ArrayTaskImp(t), "X");
+Q_deflate_err_text	src/Ufbx.NET/Parse/DomNode.cs	            if (res == -28) { error = "Cancelled"; return false; }	            if (res == -28) { error = "X"; return false; }
+C_ascii_threshold	src/Ufbx.NET/Parse/AsciiDomNode.cs	        const long MinThreadedAsciiValues = 64;	        const long MinThreadedAsciiValues = 4;
+C_ascii_task_offset	src/Ufbx.NET/Parse/AsciiDomNode.cs	                        t.ArrDataOffset = (int)numValues * arrElemSize;	                        t.ArrDataOffset = 0;
+C_ascii_no_run	src/Ufbx.NET/Parse/AsciiDomNode.cs	                            uc.ThreadPool.RunTask(task);	                            if (false) uc.ThreadPool.RunTask(task);
+Q_ascii_inline_fallback	src/Ufbx.NET/Parse/AsciiDomNode.cs	                            UfbxiFail.CheckMsg(UfbxiAscii.ArrayTaskImp(t), "Threaded ASCII parse error");	                            UfbxiFail.CheckMsg(UfbxiAscii.ArrayTaskImp(t), "X");

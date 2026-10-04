@@ -1,5 +1,5 @@
 // Isolated verifier for the ported ASCII FBX tokenizer and array-element parsers
-// (src/Ufbx/Parse/Ascii.cs + AsciiState.cs, ufbx.c:9400-10220).
+// (src/Ufbx.NET/Parse/Ascii.cs + AsciiState.cs, ufbx.c:9400-10220).
 //
 // This version compiles against the GENUINE Parse/Stream.cs (UfbxiStream),
 // Parse/InputStreams.cs (UfbxMemoryInputStream / UfbxFileInputStream) and
@@ -34,9 +34,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
-namespace UfbxTests
+namespace Ufbx.NET.Tests
 {
     static class AsciiCheck
     {

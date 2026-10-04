@@ -1,5 +1,5 @@
 // NumericCheck: bit-exactness harness for the ported numeric text->double layer
-// (src/Ufbx/Parse/Numeric.cs), driven by the C oracle `tools/numeric_oracle.c`
+// (src/Ufbx.NET/Parse/Numeric.cs), driven by the C oracle `tools/numeric_oracle.c`
 // (output `tools/numeric_oracle.txt`), built with the mandatory reference flags
 //   zig cc -O2 -std=c11 -mcpu=x86_64 -ffp-contract=off -I C:/Workspace/_analyze_ufbx
 //
@@ -46,7 +46,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace NumericCheck
 {

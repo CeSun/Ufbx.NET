@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for batch O (the `pivot_handling` load-option dimension).
-       Not part of ufbx-cs.sln. Replays the record stream of tools/pivot_oracle.c (built with zig,
-       #include "ufbx.c") through src/Ufbx/Parse/SceneBuild.cs:464-583 (the pivot block of
-       UfbxiSceneBuild.PreFinalizeScene) as driven from src/Ufbx/Parse/Load.cs, and compares every
+       Not part of ufbx.net.sln. Replays the record stream of tools/pivot_oracle.c (built with zig,
+       #include "ufbx.c") through src/Ufbx.NET/Parse/SceneBuild.cs:464-583 (the pivot block of
+       UfbxiSceneBuild.PreFinalizeScene) as driven from src/Ufbx.NET/Parse/Load.cs, and compares every
        record of the grammar documented in the oracle header. Also serves as the mutation rig. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -19,8 +19,8 @@
     <NoWarn>CS0168;CS0219;CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
-    <Compile Include="..\..\tests\Ufbx.Tests\HashScene.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
+    <Compile Include="..\..\tests\Ufbx.NET.Tests\HashScene.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

@@ -11,7 +11,7 @@
 
 ## 0. 总纲（不可改）
 
-- 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}` v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx`。
+- 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}` v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx.NET`。
 - **只读** `C:/Workspace/_analyze_ufbx`（共享参考树），任何插桩都在私有副本 `tools/_scratch/ufbx_dbg/` 做。
 - 每一波交付物 = **C oracle + C# 差分 harness + 变异对照（mutation controls）**，变异结束必须用 `cmp` 证明文件逐字节还原。
 - 盲区要分类：**equivalent-by-construction（等价于构造，论证写进 PORTING_NOTES）** 还是 **corpus/harness gap（语料或测具缺口，要补）**。
@@ -24,7 +24,7 @@
   ```
 
   触及 sin/cos/atan2/pow 的 oracle 追加 `-DUFBX_EXTERNAL_MATH` + `C:/Workspace/_analyze_ufbx/extra/ufbx_math.c`。
-- C# 构建：`dotnet build ufbx-cs.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`。
+- C# 构建：`dotnet build ufbx.net.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`。
 
 ## 1. 当前基线（接手前先复现，确认没退化）
 
@@ -72,14 +72,14 @@ C 侧权威行号（照这个读，别自己找）：
 
 ## 3. 本批已完成的代码改动（**尚未编译通过**）
 
-- `src/Ufbx/Parse/InputStreams.cs`：`UfbxMemoryInputStream` 加 `UfbxCloseMemoryCb closeCb` 字段 + `(byte[], int, UfbxCloseMemoryCb)` 构造 + `Close()` 里按 C 顺序触发回调（**故意不加 closed 守卫**，C 二次调用是 double free，不可测）；`UfbxFileInputStream` 加 `(FileStream file, bool ownsHandle)` 构造，并说明 `(string path)` 构造收到的是**已解析好的 UTF-16 路径**（原构造直接 `opensFile`，保留）。
-- `src/Ufbx/Parse/StreamOpen.cs`（新文件，~240 行，头部列了 6 条不可表达的偏差）：`UfbxiFileContext.Begin/End`、`PathToUtf16`、`Fopen`、`StdioOpen`（internal）、`OpenFileCtx`、`OpenFile`、`DefaultOpenFileEntry`、`OpenMemoryCtx`、`OpenMemory`。
-- `src/Ufbx/Parse/Load.cs`：`DefaultOpenFileFn` 与 `OpenFileWithDefault` 改为走 `UfbxiStreamOpen`（顺手修掉"非法 UTF-8 路径被误报成 FILE_NOT_FOUND"这个既存保真缺口）；deferred open 的自定义回调分支改为传**已解析的** `filenameLen`（对齐 C:25239），不再传 `uc.LoadFilenameLen`。
-- `src/Ufbx/Api/UfbxApi.cs`：加了 9 个公开入口 `LoadStream / LoadStreamPrefix / LoadStdio / LoadStdioPrefix / DefaultOpenFile / OpenFile / OpenFileCtx / OpenMemory / OpenMemoryCtx`，签名口径：C 的 `ufbx_stream *stream` 出参 ⇒ `out UfbxInputStream`；`ufbx_open_file_context` ⇒ `nint ctx`（收下并忽略，不建模 allocator，PORTING_NOTES #4）；`void *file_void` ⇒ `FileStream`。
+- `src/Ufbx.NET/Parse/InputStreams.cs`：`UfbxMemoryInputStream` 加 `UfbxCloseMemoryCb closeCb` 字段 + `(byte[], int, UfbxCloseMemoryCb)` 构造 + `Close()` 里按 C 顺序触发回调（**故意不加 closed 守卫**，C 二次调用是 double free，不可测）；`UfbxFileInputStream` 加 `(FileStream file, bool ownsHandle)` 构造，并说明 `(string path)` 构造收到的是**已解析好的 UTF-16 路径**（原构造直接 `opensFile`，保留）。
+- `src/Ufbx.NET/Parse/StreamOpen.cs`（新文件，~240 行，头部列了 6 条不可表达的偏差）：`UfbxiFileContext.Begin/End`、`PathToUtf16`、`Fopen`、`StdioOpen`（internal）、`OpenFileCtx`、`OpenFile`、`DefaultOpenFileEntry`、`OpenMemoryCtx`、`OpenMemory`。
+- `src/Ufbx.NET/Parse/Load.cs`：`DefaultOpenFileFn` 与 `OpenFileWithDefault` 改为走 `UfbxiStreamOpen`（顺手修掉"非法 UTF-8 路径被误报成 FILE_NOT_FOUND"这个既存保真缺口）；deferred open 的自定义回调分支改为传**已解析的** `filenameLen`（对齐 C:25239），不再传 `uc.LoadFilenameLen`。
+- `src/Ufbx.NET/Api/UfbxApi.cs`：加了 9 个公开入口 `LoadStream / LoadStreamPrefix / LoadStdio / LoadStdioPrefix / DefaultOpenFile / OpenFile / OpenFileCtx / OpenMemory / OpenMemoryCtx`，签名口径：C 的 `ufbx_stream *stream` 出参 ⇒ `out UfbxInputStream`；`ufbx_open_file_context` ⇒ `nint ctx`（收下并忽略，不建模 allocator，PORTING_NOTES #4）；`void *file_void` ⇒ `FileStream`。
 
 ## 4. 下一步（按序）
 
-1. **先让它编译**：`UfbxApi.cs` 用到 `FileStream` 但文件里**还没加 `using System.IO;`**（此前 src 只有 `InputStreams.cs` 依赖 `System.IO`，加在 Api 文件里是有意的）。跑 `dotnet build ufbx-cs.sln -c Release` 清干净，再跑一遍第 1 节基线确认没退化。
+1. **先让它编译**：`UfbxApi.cs` 用到 `FileStream` 但文件里**还没加 `using System.IO;`**（此前 src 只有 `InputStreams.cs` 依赖 `System.IO`，加在 Api 文件里是有意的）。跑 `dotnet build ufbx.net.sln -c Release` 清干净，再跑一遍第 1 节基线确认没退化。
 2. 写 `tools/stream_oracle.c`（zig cc 按第 0 节唯一配置编译）+ `tools/stream_corpus.txt` + `tools/StreamCheck/`（C# 差分 harness），并在 `tools/_scratch/battery.sh` 里加一行 `run stream ...`（**注意**：s3bc 那行曾因漏传 oracle 路径而 `exit=2`，新增行要把 oracle/corpus 绝对路径都传全），迭代到 **0 mismatches**。
 3. 变异对照 ~26 例（含 inert `Q_*` 对照组），每例 `cmp` 还原证明，盲区分类写清。变异锚点参照 `tools/_scratch/CreateAnim.cs.bak` 的做法。
 4. 跑 `tools/_scratch/battery.sh`，与第 1 节基线逐条比对（`streamcheck` 那 3 条既存失败除外）。
@@ -98,4 +98,4 @@ C 侧权威行号（照这个读，别自己找）：
 
 ## 6. 上手第一件事
 
-读 `COORDINATION.md` 最新一节（批 K）+ `PORTING_NOTES.md`（尤其 #3 错误口径、#4 allocator 不建模、#8 stream 抽象、规则 12），读 `src/Ufbx/Api/UfbxApi.cs`、`src/Ufbx/Parse/StreamOpen.cs`、`src/Ufbx/Parse/Load.cs:750-1010`、`src/Ufbx/Parse/Stream.cs`、`src/Ufbx/Util/Print.cs:300-432`，然后从第 4 节第 1 步开始。**不要重写已有实现**，先确认它是否已经正确。
+读 `COORDINATION.md` 最新一节（批 K）+ `PORTING_NOTES.md`（尤其 #3 错误口径、#4 allocator 不建模、#8 stream 抽象、规则 12），读 `src/Ufbx.NET/Api/UfbxApi.cs`、`src/Ufbx.NET/Parse/StreamOpen.cs`、`src/Ufbx.NET/Parse/Load.cs:750-1010`、`src/Ufbx.NET/Parse/Stream.cs`、`src/Ufbx.NET/Util/Print.cs:300-432`，然后从第 4 节第 1 步开始。**不要重写已有实现**，先确认它是否已经正确。

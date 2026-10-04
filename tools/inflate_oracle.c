@@ -1,5 +1,5 @@
 // C reference oracle for the ported inflate / bit-stream / Huffman layer
-// (src/Ufbx/Parse/{BitStream,Huff,Inflate}.cs).
+// (src/Ufbx.NET/Parse/{BitStream,Huff,Inflate}.cs).
 //
 // It #includes ufbx.c as a single translation unit so every `static ufbxi_*` internal
 // (ufbx_inflate, ufbxi_adler32, ufbxi_bit_stream_init, ufbxi_bit_refill, ...) is directly

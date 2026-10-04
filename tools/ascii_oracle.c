@@ -1,5 +1,5 @@
 // C reference oracle for the ported ASCII FBX tokenizer / state machine
-// (src/Ufbx/Parse/Ascii.cs + AsciiState.cs, ufbx.c:9400-10220).
+// (src/Ufbx.NET/Parse/Ascii.cs + AsciiState.cs, ufbx.c:9400-10220).
 //
 // Included as a single translation unit with ufbx.c so the `static ufbxi_*` ASCII internals
 // are callable directly: ufbxi_ascii_next_token / refill / yield / peek / next / skip_whitespace

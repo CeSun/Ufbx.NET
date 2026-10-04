@@ -1,23 +1,23 @@
 # ⚠️ 多会话协调（写给所有在该 workspace 工作的 agent）
 
 检测到多个会话在 `C:\Workspace\ufbx-cs` 并行移植 ufbx→C#，已发生文件互相覆盖：
-- 会话 A（本文件作者）交付：`src/Ufbx/Types.cs`（147 struct + 60 enum 全覆盖、对照头文件校验 207/207）→ 被另一会话移入 `_quarantine/Types.duplicate.cs.txt`；`tools/`（golden_hashes.txt 2179 行、math_vectors.txt 72000 条、ufbx_funcmap.txt、hash_scene.exe 生成器）
-- 会话 B 交付：`src/Ufbx/Model/**`（另一套数据模型）、`src/Ufbx/Parse/Error.cs`、`InputStreams.cs`、`Stream.cs`
-- 数学代理（会话 A 派出）：`src/Ufbx/Math/UfbxMath.cs`（2098 行完整移植）+ 隔离向量验证中
+- 会话 A（本文件作者）交付：`src/Ufbx.NET/Types.cs`（147 struct + 60 enum 全覆盖、对照头文件校验 207/207）→ 被另一会话移入 `_quarantine/Types.duplicate.cs.txt`；`tools/`（golden_hashes.txt 2179 行、math_vectors.txt 72000 条、ufbx_funcmap.txt、hash_scene.exe 生成器）
+- 会话 B 交付：`src/Ufbx.NET/Model/**`（另一套数据模型）、`src/Ufbx.NET/Parse/Error.cs`、`InputStreams.cs`、`Stream.cs`
+- 数学代理（会话 A 派出）：`src/Ufbx.NET/Math/UfbxMath.cs`（2098 行完整移植）+ 隔离向量验证中
 
 ## 约定（唯一权威）
 `PORTING_NOTES.md` 是移植约定。关键分歧点已出现：会话 B 的 Model 让 `UfbxNode` 继承 `UfbxElement`（约定规定独立 class），两者取其一，不能共存。
 
 ## 建议的分工（等用户裁决）
 1. **单会话继续**（推荐）：用户保留一个会话，另一会话停止写入。胜出的数据模型（Types.cs 或 Model/）二选一，删除/归档另一套。
-2. **按模块分治**：一个会话拥有 src/Ufbx 全部（数据模型+解析+场景），另一会话只做 tests/Ufbx.Tests（hash_scene 移植 + golden 对拍 + 数学向量）——测试线与实现线天然无冲突。
+2. **按模块分治**：一个会话拥有 src/Ufbx.NET 全部（数据模型+解析+场景），另一会话只做 tests/Ufbx.NET.Tests（hash_scene 移植 + golden 对拍 + 数学向量）——测试线与实现线天然无冲突。
 
 ## 当前构建状态
-- `src/Ufbx/Ufbx.csproj` 只保留 PropertyGroup，**不再排除 `Model/**`**；`Model/**` 是唯一参与编译的数据模型层，`_quarantine/Types.duplicate.cs.txt` 不参与编译。
+- `src/Ufbx.NET/Ufbx.NET.csproj` 只保留 PropertyGroup，**不再排除 `Model/**`**；`Model/**` 是唯一参与编译的数据模型层，`_quarantine/Types.duplicate.cs.txt` 不参与编译。
 - golden hash 与验证工具齐备：见 `tools/`
 
 ## 裁决（本会话执行，2026-10-02）
-数据模型取 `src/Ufbx/Model/**`，单文件 `Types.cs` 继续留在 `_quarantine/`。依据是实测而不是偏好：
+数据模型取 `src/Ufbx.NET/Model/**`，单文件 `Types.cs` 继续留在 `_quarantine/`。依据是实测而不是偏好：
 
 - ufbx.h 的 147 个 struct 在 `Model/**` 中**逐一按名命中 147/147**，无缺失。
 - 字段数比对（C vs C#）：mesh 53/52、node 44/43、texture 22/21、camera 21/20、material 9/8、light 11/10、anim_curve 8/7。差值恒为 1，就是 C 内嵌的 `ufbx_element element` 成员——C# 用继承表达，不是漏移植。
@@ -25,17 +25,17 @@
 
 分歧点「`UfbxNode` 是否独立于 `UfbxElement`」的结论：**继承**。C 里 `ufbx_node` 的首个成员就是 `ufbx_element element`，`ufbxi_read_element`、连接/实例化路径全部按 element 基类指针操作，独立 class 会迫使这些路径重写。`PORTING_NOTES.md` 那一行已按此修正。
 
-因此：**不要**再往 `Ufbx.csproj` 里加 `<Compile Remove="Model\**\*.cs" />`；缺的类型按解析层实际需要补进 `Model/`，不要另起一套模型。
+因此：**不要**再往 `Ufbx.NET.csproj` 里加 `<Compile Remove="Model\**\*.cs" />`；缺的类型按解析层实际需要补进 `Model/`，不要另起一套模型。
 
 ## 验证现状（可复现）
-- `dotnet build ufbx-cs.sln`：0 error / 0 warning。
-- `dotnet run --project tests/Ufbx.Tests -- mathvec tools/math_vectors.txt`：72000 条向量，72000 通过，0 失败（位精确；关键点是对齐 golden 二进制的 FMA 收缩，见 PORTING_NOTES 的例外条目）。
-- `dotnet run --project tests/Ufbx.Tests -- streamcheck`：2243020 项检查，0 失败（解析层 IO 窗口/yield/refill/skip 语义对拍 C 的 `ufbxi_context` 状态机）。
+- `dotnet build ufbx.net.sln`：0 error / 0 warning。
+- `dotnet run --project tests/Ufbx.NET.Tests -- mathvec tools/math_vectors.txt`：72000 条向量，72000 通过，0 失败（位精确；关键点是对齐 golden 二进制的 FMA 收缩，见 PORTING_NOTES 的例外条目）。
+- `dotnet run --project tests/Ufbx.NET.Tests -- streamcheck`：2243020 项检查，0 失败（解析层 IO 窗口/yield/refill/skip 语义对拍 C 的 `ufbxi_context` 状态机）。
 
 ## 在途分工（本会话派出的三个子代理，文件所有权互不重叠）
-- `src/Ufbx/Parse/{BitStream,Huff,Inflate}.cs` + `tools/InflateCheck`（已停止，52 项失败待收）
-- `src/Ufbx/Util/**` + `tools/UtilCheck`（**已落地并核收**，见下文「Util 层已收口」）
-- `tests/Ufbx.Tests/HashScene.cs` + `tools/HashCheck`（发现 Model 字段缺口只上报，不改 Model）
+- `src/Ufbx.NET/Parse/{BitStream,Huff,Inflate}.cs` + `tools/InflateCheck`（已停止，52 项失败待收）
+- `src/Ufbx.NET/Util/**` + `tools/UtilCheck`（**已落地并核收**，见下文「Util 层已收口」）
+- `tests/Ufbx.NET.Tests/HashScene.cs` + `tools/HashCheck`（发现 Model 字段缺口只上报，不改 Model）
 
 其他会话若需写入，请避开以上路径，或先在本文件登记。
 
@@ -54,27 +54,27 @@
 2. **两条新硬化规则已写进 PORTING_NOTES.md**（后续任何依赖指针序的代码都要遵守）：
    - 字符串指针的地址序**只在同一个 pool 内**等于分配序，跨 pool 不可比（实测反例：`S` pool 的 8128B chunk 排在分配更晚的 `K` pool 4032B chunk 之后）。oracle 用 `GRP_*`、`UtilCheck` 用 `RankedIds[grp]` 分组算 rank；把分组打平成单一 rank 域会产生 1274 项失败，说明这条不是纸面约定。
    - `UfbxiStrings.All` 现在逐条等于 ufbx.c:5583-5886 的 `ufbxi_strings[]` 表序（原先按 `ufbxi_Str_*` 声明序生成，相邻项有互换）。ufbx.c:26617-26640 用线性扫描把 prop_name 归一到常量，依赖该表在 `ufbxi_str_less` 下严格升序；顺序错则 `name == ufbxi_XXX` 一类的指针比较静默失效。已加 `L table strictly sorted` 检查守门。
-3. **`src/Ufbx/Util/**`、`Parse/UfbxiStrings.cs`、`tools/util_oracle.*`、`tools/UtilCheck/` 归本会话所有**，其他会话/子代理不要写入；需要新增池侧入口就在 COORDINATION 里登记需求。
+3. **`src/Ufbx.NET/Util/**`、`Parse/UfbxiStrings.cs`、`tools/util_oracle.*`、`tools/UtilCheck/` 归本会话所有**，其他会话/子代理不要写入；需要新增池侧入口就在 COORDINATION 里登记需求。
 4. 之前两个后台子代理（utils、inflate）都在轮次上限处停止：utils 的产出已由本会话核收+补完（即上面第 1 条）；`tools/InflateCheck` 现状 **2759 向量 / 2707 通过 / 52 失败**（含 empty-input、zlib 对照、progress 驱动、bit-flip 模糊等几组），任务 #7 仍开放。ASCII 子代理报 1121/1121，但它的验证工程用了 `UfbxiStream`/`UfbxiContext` 的**测试本地替身**，替身必须换成真实类型后才算数，这项核收尚未做。
 
 ## 更新（DOM 线会话，2026-10-02 深夜 → 10-03）——二进制 DOM 已收口
 
 1. **二进制 DOM 全量对拍通过**：`dotnet run --project tools/DomCheck -c Release`（默认读 `tools/dom_oracle.txt`，语料根 `C:\Workspace\_analyze_ufbx`）→ **11 个二进制文件 / 9471 条 `N` + 21997 条 `V` + 9471 条 `D` + 11 条 `S`/`T`，0 条分歧**；端口输出落 `tools/dom_port.txt`（CRLF，与 oracle 同格式，可直接 diff）。覆盖到的语义：27 字节头 + 3000/2000 的 **legacy 路径**（`ufbxi_parse_legacy_toplevel` 递归 + `retain_dom_node` 递归）、7400/7500 的 32/64 位头、**big-endian**（`ufbxi_swap_endian(_array)` 后数组按小端落盘）、DEFLATE 数组与其 **截断失败样本 fi 15**（`S 15 0 1 16 0 "Bad DEFLATE data" 0 basis -` 逐字节命中）、名字是否回指 `ufbxi_*` 常量（`UfbxiPtrIdTable.IsStatic` ↔ oracle 的 `is_static_ptr`）、`ARRAY_BLOB` 的 `[8B LE size][bytes]` 打包、以及 `ufbx_dom_*` 六个访问器的 count+digest（`D` 记录）。
-   两侧证据链：`tools/dom_oracle.c`（公开 API + `retain_dom=true`）/ `tools/dom_oracle.txt`（74585 行）/ `tools/DomCheck/`（net8 隔离工程，编译 `src/Ufbx/**` 全量）。语料清单在运行时从 `dom_oracle.c` 的 `g_default_files[]` 解析，两侧不可能漂移。
+   两侧证据链：`tools/dom_oracle.c`（公开 API + `retain_dom=true`）/ `tools/dom_oracle.txt`（74585 行）/ `tools/DomCheck/`（net8 隔离工程，编译 `src/Ufbx.NET/**` 全量）。语料清单在运行时从 `dom_oracle.c` 的 `g_default_files[]` 解析，两侧不可能漂移。
 2. **驱动等价性**（写进 `tools/DomCheck/Program.cs` 头部注释）：C 的名字驱动 `ufbxi_parse_toplevel()`（11266-11326）+ `retain_toplevel/retain_toplevel_child`（10809-10849）总是把挂起的 children 补给**上一个**被 retain 的顶层节点，所以 children 只可能按文件序挂载 → 顺序驱动的等价驱动成立。version<6000 走 legacy 分支（递归解析，children 由 `retain_dom_node` 递归 retain）。**不要**为了省事把两者合并成"统一递归"：现代路径顶层 children 在 depth 0 解析、legacy 在 depth+1，`depth < UFBXI_MAX_NODE_DEPTH` 的允许深度差 1 层。
 3. **harness 抓到 1 个真 bug（已修，规则已进库）**：`uc->retain_vertex_w` 是**从 opts 派生**的状态（ufbx.c:25292 `(retain_dom || retain_vertex_attrib_w) && !ignore_geometry`），不是 opts 直通。缺了它 `NormalsW/BinormalsW/TangentsW` 在 `retain_dom` 下被判成 `'-'`（ignored）而不是 `'r'`，fi 13 的 507 个 double 直接消失。现在由 `UfbxiContext.InitDerivedOpts()` 承担，**移植 `ufbxi_load()` 的人必须在 `InitStringPool()` 之前调它**。
 4. **待解决的移植口径（已登记，勿在别处各自发明）**：错误描述链路。C 在 `UFBXI_FEATURE_ERROR_STACK==0` 下，`ufbxi_check(cond)`/`ufbxi_fail(desc)` **不写** `error.description`（走 `ufbxi_fail_no_msg`→`fail_imp_err(err,NULL,...)`），最终由 `ufbxi_fix_error_type(&uc->error, "Failed to load", p_error)`（25623）填默认串；只有 `ufbxi_check_msg`/`ufbxi_error_msg` 才带描述。本项目的 `UfbxParseError.Message` 目前一律是 C 的**描述文本**，对 msg 型站点正确，对纯 check 站点会把条件文本当描述上报（当前语料只有 fi 15 失败且它是 msg 型，所以对拍通过）。收口点在公开 API 层的顶层 catch：需要区分两类失败，或让 `UfbxiFail.Check(cond, ...)` 传条件串并由 `$desc\0cond` 约定解出描述。
 5. **ASCII DOM 缺口**：oracle 的 26 个文件里 15 个是 ASCII，本轮按 C 自己的判据（22 字节二进制 magic）跳过并在输出里逐个列出。缺的是 `ufbxi_ascii_parse_node`（ufbx.c:10236-10520）——`Parse/Ascii.cs` 已有 tokenizer/数组快路，但没有 node/prop 装配入口。这是 golden 全量对拍的前置项（语料里 ASCII 文件占比很大）。
 6. **本轮已核收的子代理结果**：ASCII 线在把测试替身换成真实 `UfbxiStream`/`UfbxiContext` 后 **1737/1737 通过**（任务 #13 关）；数值线 `ufbxi_parse_double`/`ufbxi_f64_to_i64` oracle **280169/280169 零分歧**，并独立确认了 `BigintShiftLeft` 的 `ufbxi_maybe_uninit` 残留值语义＝"共享复用缓冲区，读残留值"（任务 #15 关）。inflate 子代理再次在轮次上限停止，`tools/InflateCheck/Program.cs`（现在只有 16 行）与 `tools/inflate_oracle.c` 可能处于**改了一半**的状态，接手前先读不要直接覆盖。
-7. **文件所有权（本轮登记）**：`src/Ufbx/Parse/DomNode.cs`、`src/Ufbx/Model/UfbxDomApi.cs`、`tools/DomCheck/`、`tools/dom_oracle.*`、`tools/dom_port.txt` 归 DOM 线。`src/Ufbx/Parse/UfbxiContext.cs` 是**共享文件**（本轮加了 `InitDerivedOpts()`）——其他会话/子代理改它之前先在本文件登记，避免再次互相覆盖。
+7. **文件所有权（本轮登记）**：`src/Ufbx.NET/Parse/DomNode.cs`、`src/Ufbx.NET/Model/UfbxDomApi.cs`、`tools/DomCheck/`、`tools/dom_oracle.*`、`tools/dom_port.txt` 归 DOM 线。`src/Ufbx.NET/Parse/UfbxiContext.cs` 是**共享文件**（本轮加了 `InitDerivedOpts()`）——其他会话/子代理改它之前先在本文件登记，避免再次互相覆盖。
 
 ## 更新（DOM 线会话，2026-10-03）——ASCII DOM 已收口，取代上一节第 5 条
 
 1. **全 26 个语料文件零分歧**：`dotnet run --project tools/DomCheck -c Release -- tools/dom_oracle.txt` → **26 个文件（11 二进制 + 15 ASCII）/ 16120 条 `N` + 42293 条 `V` + 16120 条 `D` + 26 条 `S`/`T`，0 条分歧**；`tools/dom_port.txt` 与 `tools/dom_oracle.txt` 行数逐行相等（各 74585 行）。上一节第 5 条的"按 magic 跳过 ASCII"已删除，harness 现在两种格式都跑，并把**端口的格式判定**（`uc.FromAscii`，来自 `ufbxi_begin_parse` 的 magic 比较）与独立扫描的 magic 对照，不一致就打 `FORMAT MISMATCH`（当前 0 条）。
-2. **新增文件**：`src/Ufbx/Parse/AsciiDomNode.cs`（`ufbxi_ascii_parse_node` ufbx.c:10280-10690 + `ufbxi_setup_base64`/`ufbxi_decode_base64` + tmp_stack 的 bool/byte/i32/i64/f32/f64 压栈 helper）。**改动**：`Parse/DomNode.cs` 的 `UfbxiDom` 变成 `partial`，原 `ParseNode` 更名 `ParseNodeBinary`，新增按 `uc.FromAscii` 分派的 `ParseNode`——移植加载入口的人只要调 `UfbxiDom.ParseNode` 就同时覆盖两种格式，C 侧对应 `ufbxi_parse_toplevel`/`ufbxi_parse_legacy_toplevel`/`ufbxi_parse_toplevel_child_imp` 三处的同一分派。
+2. **新增文件**：`src/Ufbx.NET/Parse/AsciiDomNode.cs`（`ufbxi_ascii_parse_node` ufbx.c:10280-10690 + `ufbxi_setup_base64`/`ufbxi_decode_base64` + tmp_stack 的 bool/byte/i32/i64/f32/f64 压栈 helper）。**改动**：`Parse/DomNode.cs` 的 `UfbxiDom` 变成 `partial`，原 `ParseNode` 更名 `ParseNodeBinary`，新增按 `uc.FromAscii` 分派的 `ParseNode`——移植加载入口的人只要调 `UfbxiDom.ParseNode` 就同时覆盖两种格式，C 侧对应 `ufbxi_parse_toplevel`/`ufbxi_parse_legacy_toplevel`/`ufbxi_parse_toplevel_child_imp` 三处的同一分派。
 3. **口径记录（都写进了文件头注释）**：C 的多路复用 `tmp_stack` 在端口里分成类型化 node 栈 + 单一字节栈 `UfbxiContext.TmpStack`；`'s'/'S'/'C'` 字符串数组的元素**不进字节栈**（C 按 `sizeof(ufbx_string)=16` 进栈），改由局部 `List<string>` 承接，但 8 字节对齐 helper 与 `PAD_BEGIN` 的 4 个零槽仍按 C 压/弹，好让栈深账目可核对。线程化路径（`UFBXI_MIN_THREADED_ASCII_VALUES`、`deferred_size`、`ufbxi_ascii_array_task_*`）在端口里恒不可达，故未移植——`deferred_size` 恒为 0 是字符串/数组尾部分支能简化的前提。
 4. **harness 抓到第 2 个真 bug（已修）**：`arr_error`（坏 base64）在 C 里是**整数组丢弃**（`ufbxi_pop_size(..., NULL, false); num_values = 0;`），端口原先只在数值分支处理，字符串分支照收，于是 fi 7 的 `BinaryData: "Yes"`（3 字节，`len%4!=0`）和 fi 8 的 `synthetic_base64_parse_7700_ascii.fbx` 共 72 条记录多出一个 blob 元素。现在字符串分支同样按 `arr_error` 清空。注意 C 的 `size = num_values - 4` 在 `PAD_BEGIN`+`arr_error` 下会 size_t 下溢，端口用显式报错守卫（该组合恒不可达：pad 只用于数值数组类型）。
-5. **回归确认**：`dotnet build ufbx-cs.sln -c Release` 0 warning / 0 error；UtilCheck 6865/6865、AsciiCheck 1737/1737、NumericCheck 280169/280169、mathvec 72000/72000、streamcheck 2243020/0 全绿。**oracle 未重新生成**，因此不涉及 `-O2` 重编译风险。
+5. **回归确认**：`dotnet build ufbx.net.sln -c Release` 0 warning / 0 error；UtilCheck 6865/6865、AsciiCheck 1737/1737、NumericCheck 280169/280169、mathvec 72000/72000、streamcheck 2243020/0 全绿。**oracle 未重新生成**，因此不涉及 `-O2` 重编译风险。
 6. **C# 语言坑（供后续移植参考）**：switch 的**最后一个** `case`/`default` 段若以一条普通语句结尾而没有 `break;`，编译报 **CS8070「控件无法从最终用例标签脱离开关」**（不是 CS0163），而调用的 `UfbxiFail.Fail()` 虽然必抛但签名是 `void`，编译器不认它是终结语句——照 C 的 `default: ufbxi_fail(...)` 直译时要补 `break;`。
 7. **下一步（DOM 线未认领）**：加载入口 `ufbxi_load`（25280-25630）+ `ufbxi_determine_format` + 公开 `UfbxApi.LoadMemory/LoadFile/FreeScene`，以及仍然开放的 inflate（#7/#12，fi 15 的 DEFLATE 失败样本本轮逐字节命中，但数组解压路径要等 inflate 收口）。上一节第 4 条的错误描述口径**仍未收口**，收口点在公开 API 层的顶层 catch。
 8. **inflate 线已核收（任务 #7/#12 关）**：`dotnet run --project tools/InflateCheck -c Release` → **4613 向量 / 0 失败**（含 8024 次 bit-flip 模糊与 585 D / 13 B / 11 A 条 C oracle 答案），端口侧走的是真实 `UfbxiInflate.UfbxInflate()`，`src/` 里没有任何 `DeflateStream`/`System.IO.Compression`（只有 harness 用它生成对照数据）。`{BitStream,Huff,Inflate}.cs` 共 1593 行。核收做了**变异对照**证明断言不空转：把 `DeflateLengthLut[1]`（长度符号 4）的 extra bits 由 0 改 1 → 40 条失败；反证 harness 有效。同时确认 `DeflateLengthLut`/`DeflateDistLut`/`DeflateCodeLengthPermutation` 与 ufbx.c:1854-1869 逐字节相同。变异已全部还原（两处 LUT 改动都改回原值，还原后 InflateCheck 4613/4613、DomCheck 26 文件 0 分歧）。
@@ -85,9 +85,9 @@
 1. **语料放宽**：`tools/dom_oracle.c` 的 `g_default_files[]` 由 26 追加到 **75**（只追加，`fi` 索引不变；原 74585 行前缀逐字节复现）。oracle 已用**规定的** zig 命令行重生成：`zig cc -O2 -std=c11 -mcpu=x86_64 -ffp-contract=off -I C:/Workspace/_analyze_ufbx tools/dom_oracle.c -o tools/dom_oracle.exe`。现 `tools/dom_oracle.txt` = **529708 行 / 75 个 `S` / 144197 `N` / 241164 `V` / 144197 `D` / 75 `T`**。放宽目的是让新写的 ASCII 解析器见到更多形状（合成特性文件 + 真实 DCC 导出：max/maya/blender/houdini/hugetextures/fbxsdk 等）；**`data/fuzz/*.fbx` 刻意排除**——它们的分歧来自尚未收口的错误描述口径，而不是 DOM，混进来只会掩掉真信号。
 2. **现状**：`dotnet run --project tools/DomCheck -c Release -- tools/dom_oracle.txt` → 75 文件（31 二进制 / 44 ASCII），**7 条分歧记录 / 3 个文件**，全部已定位（见下）。这 7 条现在由 harness 的 `KnownDivergences` 账本记账，账本要求**端口当前产出的记录内容逐字符命中 `ExpectPort`** 才允许豁免（换了新 bug 就照常 FAIL），并且任何一条一旦不再分歧就打 `LEDGER STALE` 逼删除——账本不会替活着的 bug 长期背书。
 3. **分歧 A（6 条，fi 32 node 197/207、fi 55 node 387，都是 `PointsIndex` 的 `V`+`D`）＝根因已定案，不是解析 bug**：C 的 DOM blob 直接指向 `arr->data`（ufbx.c:10754），而 element reader 用的是同一块缓冲。`ufbxi_read_line()`（13914-13948）**就地**改写 `line->point_indices.data`，把负的结束标记 `~ix` 化并夹越界索引，于是文件里的 `-1` 在 C 的 DOM 里是 `0`、`-5` 是 `4`。对照：`ufbxi_read_mesh()`（13460-13466）、legacy mesh（16196-16202）和 `ufbxi_indexer_indices()`（12707-12719）在 `retain_dom`/不持有缓冲时**先复制再改**，所以 `PolygonVertexIndex` 的 DOM 保持文件字节。规则已写进 `PORTING_NOTES.md`「DOM/数组数据约定」最后一条：**element reader 必须逐点照抄 C 的复制/不复制判断**。收口点在 `ufbxi_read_line` 的移植，不在 DOM 层——**任何人不要去 `Parse/BinaryArray.cs`/`DomNode.cs` 里"修"这 6 条**。
-4. **分歧 B（1 条，fi 64 `synthetic_bad_inf_nan_fail_7500_ascii.fbx` 的 `S`）＝就是上一节第 7 条与更早第 4 条登记的错误描述口径**：C 的纯 `ufbxi_check()` 站点不写 `error.description`，最终由 `ufbxi_fix_error_type(&uc->error, "Failed to load", p_error)`（25623）填默认串；端口把条件文本 `end == token->str_data + token->str_len - 1` 当描述上报。**站点已精确定位，交给做「逐模块 call-site 审计」的那条线一次做完，别在 DOM 线零散改**：`src/Ufbx/Parse/Ascii.cs:588-591` 与 `597-599`（该文件目前 0 处使用 `UfbxiFail`，全是直接 `throw new UfbxParseError(...)`），对应 C 的 ufbx.c:9789 与 9794，两处都是 **plain** `ufbxi_check(end == token->str_data + token->str_len - 1)`，所以应改成 `UfbxiFail.FailNoDesc("end == ...")`（`HasDescription=false`）。改完 fi 64 的 `S` 记录会变成 `S 64 0 1 14 0 4661696c656420746f206c6f6164 ...`（"Failed to load"），与 C 逐字节相同，账本里的 `S 64 -` 随之以 `LEDGER STALE` 报出并删除。附带口径确认：**error description 不进 golden 哈希**（`test/hash_scene.c` 只把 `error.description` 打到 stderr，golden 第二列是 `error.type`），所以这条影响的是 API 保真与 DOM 对拍，不是验收主通路。
+4. **分歧 B（1 条，fi 64 `synthetic_bad_inf_nan_fail_7500_ascii.fbx` 的 `S`）＝就是上一节第 7 条与更早第 4 条登记的错误描述口径**：C 的纯 `ufbxi_check()` 站点不写 `error.description`，最终由 `ufbxi_fix_error_type(&uc->error, "Failed to load", p_error)`（25623）填默认串；端口把条件文本 `end == token->str_data + token->str_len - 1` 当描述上报。**站点已精确定位，交给做「逐模块 call-site 审计」的那条线一次做完，别在 DOM 线零散改**：`src/Ufbx.NET/Parse/Ascii.cs:588-591` 与 `597-599`（该文件目前 0 处使用 `UfbxiFail`，全是直接 `throw new UfbxParseError(...)`），对应 C 的 ufbx.c:9789 与 9794，两处都是 **plain** `ufbxi_check(end == token->str_data + token->str_len - 1)`，所以应改成 `UfbxiFail.FailNoDesc("end == ...")`（`HasDescription=false`）。改完 fi 64 的 `S` 记录会变成 `S 64 0 1 14 0 4661696c656420746f206c6f6164 ...`（"Failed to load"），与 C 逐字节相同，账本里的 `S 64 -` 随之以 `LEDGER STALE` 报出并删除。附带口径确认：**error description 不进 golden 哈希**（`test/hash_scene.c` 只把 `error.description` 打到 stderr，golden 第二列是 `error.type`），所以这条影响的是 API 保真与 DOM 对拍，不是验收主通路。
 5. **harness 侧修掉一个假阳性**：原先 `BuildDom` 抛出时 `uc` 为 null ⇒ `parsedAscii=false`，于是「ASCII 文件 + 加载失败」被误报成 `FORMAT MISMATCH`。现在 context 在建好那一刻就写进 `slot[0]`，只有 `ok || uc.FromAscii` 才判定格式（binary 文件在 header 就失败时格式未知，跳过而不是误报）；`FORMAT MISMATCH` 与 `LEDGER STALE` 现在都计入失败。
-6. **所有权/在途提示**：`Parse/UfbxiContext.cs` 仍是有冲突风险的**共享文件**——load-spine 子代理已在其中加了 `PropTypeMap`（ufbx.c:6503）字段，且引用的 `UfbxiPropTypeName` 类型尚未落地，**当前 `dotnet build ufbx-cs.sln` 因此 1 error（CS0246, UfbxiContext.cs:263）**。这不是 DOM 线改坏的，DOM 线的 `tools/DomCheck/Program.cs` 改动已就位但因该 build 中断无法复跑。其他会话请避开 `UfbxiContext.cs`，或先在此登记。
+6. **所有权/在途提示**：`Parse/UfbxiContext.cs` 仍是有冲突风险的**共享文件**——load-spine 子代理已在其中加了 `PropTypeMap`（ufbx.c:6503）字段，且引用的 `UfbxiPropTypeName` 类型尚未落地，**当前 `dotnet build ufbx.net.sln` 因此 1 error（CS0246, UfbxiContext.cs:263）**。这不是 DOM 线改坏的，DOM 线的 `tools/DomCheck/Program.cs` 改动已就位但因该 build 中断无法复跑。其他会话请避开 `UfbxiContext.cs`，或先在此登记。
 
 ## 更新（load-spine 核收会话，2026-10-02/03）——加载主干差分对拍已建通，错误描述口径已收口
 
@@ -104,9 +104,9 @@
    b. `Parse/Ascii.cs` 的 6 个 plain 站点（9789/9794 的数字 token `end == ...`、三处 `c != '\0'`、`num_read <= dst_size`）改成 `UfbxiFail.FailNoDesc`——**这就是上一节「分歧 B」登记的那条**，fi 64 的 `S` 记录现在与 C 逐字节相同（`S 64 0 1 14 0 4661696c656420746f206c6f6164 ...` = "Failed to load"），DOM 账本里的 `S 64 -` 条目已按该节预告删除。
    两处都做了变异对照：把 plain 站点的条件文本改掉 ⇒ 两侧 harness 仍 PASS（证明纯 check 站点确实不携带描述）；把 EOF 站点改回带描述的 throw ⇒ LoadCheck **FAIL，2 文件 / 14 条分歧**。
 7. **harness 侧的必要配套**：`tools/DomCheck/Program.cs` 的顶层 catch 原先无条件 `error.Description = e.Message`（它自己的注释写明「DOM 语料只到 msg 型站点」），现在按 `UfbxParseError.HasDescription` 分流，与 `UfbxApi.ReportFailure` 同一口径。
-8. **收口了上一节第 6 条的 build 断裂**：`UfbxiPropTypeName`（C 的 `ufbxi_prop_type_name`，ufbx.c:11426）从 `Parse/Load.cs` 移到新文件 **`src/Ufbx/Parse/PropTypeName.cs`**，并给 `tools/AsciiCheck/AsciiCheck.csproj` 加了一条 `<Compile Include>`（该工程用裁剪闭包，看不到 Load.cs，于是共享文件 `UfbxiContext.cs:263` 的 `UfbxiMap<UfbxiPropTypeName,ulong>` 报 CS0246）。今后**凡被 `UfbxiContext.cs` 引用的类型不要放进只在闭包外可见的文件**。
-9. **回归确认（oracle 一律未重生成，无 `-O2` 风险）**：`dotnet build ufbx-cs.sln -c Release` 0 warning / 0 error；LoadCheck 2946/0；DomCheck 75 文件 **0 分歧 / 账本剩 6 条（全部是 `ufbxi_read_line` 的 PointsIndex 就地改写，见更早第 3 条——收口点在 element reader 移植，不是 DOM）**，且 75 个 `S`+`T` 记录与 `tools/dom_oracle.txt` 逐字节相同；UtilCheck 6865/6865、AsciiCheck 1737/1737、NumericCheck 280169/280169、InflateCheck 4613/4613、streamcheck 2243020/0、mathvec 72000/72000。
-10. **所有权（本轮登记）**：`src/Ufbx/Parse/{Load.cs,Stream.cs,PropTypeName.cs,Ascii.cs}`、`src/Ufbx/Api/`、`tools/load_oracle.*`、`tools/LoadCheck/`、`tools/load_corpus.txt`、`tools/loadcheck_inputs/`、`tools/load_port.txt`、`tools/load_check.txt` 归 load-spine 核收线；`tools/DomCheck/Program.cs` 只改了上述两处（账本条目 + catch 口径）。`UfbxiContext.cs` 仍按共享文件处理，本轮未改。
+8. **收口了上一节第 6 条的 build 断裂**：`UfbxiPropTypeName`（C 的 `ufbxi_prop_type_name`，ufbx.c:11426）从 `Parse/Load.cs` 移到新文件 **`src/Ufbx.NET/Parse/PropTypeName.cs`**，并给 `tools/AsciiCheck/AsciiCheck.csproj` 加了一条 `<Compile Include>`（该工程用裁剪闭包，看不到 Load.cs，于是共享文件 `UfbxiContext.cs:263` 的 `UfbxiMap<UfbxiPropTypeName,ulong>` 报 CS0246）。今后**凡被 `UfbxiContext.cs` 引用的类型不要放进只在闭包外可见的文件**。
+9. **回归确认（oracle 一律未重生成，无 `-O2` 风险）**：`dotnet build ufbx.net.sln -c Release` 0 warning / 0 error；LoadCheck 2946/0；DomCheck 75 文件 **0 分歧 / 账本剩 6 条（全部是 `ufbxi_read_line` 的 PointsIndex 就地改写，见更早第 3 条——收口点在 element reader 移植，不是 DOM）**，且 75 个 `S`+`T` 记录与 `tools/dom_oracle.txt` 逐字节相同；UtilCheck 6865/6865、AsciiCheck 1737/1737、NumericCheck 280169/280169、InflateCheck 4613/4613、streamcheck 2243020/0、mathvec 72000/72000。
+10. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/{Load.cs,Stream.cs,PropTypeName.cs,Ascii.cs}`、`src/Ufbx.NET/Api/`、`tools/load_oracle.*`、`tools/LoadCheck/`、`tools/load_corpus.txt`、`tools/loadcheck_inputs/`、`tools/load_port.txt`、`tools/load_check.txt` 归 load-spine 核收线；`tools/DomCheck/Program.cs` 只改了上述两处（账本条目 + catch 口径）。`UfbxiContext.cs` 仍按共享文件处理，本轮未改。
 11. **下一步（无人认领，按 funcmap 依赖序）**：seam 之后的 `ufbxi_read_root`（15847）+ definitions/objects/connections/properties/elements → scene build；LoadCheck 的 2057 条 pending 记录就是入口清单（`stopped at ufbxi_read_root: 1530` 等）。`ufbxi_read_line` 移植时必须按 PORTING_NOTES「DOM/数组数据约定」最后一条判断复制/不复制，否则 DOM 那 6 条账本会变成真分歧。
 
 ## 路线与认领（load-spine 核收会话，2026-10-03）——seam 之后的分层推进
@@ -120,7 +120,7 @@
 | S3 场景构建：`ufbxi_pre_finalize_scene`(18115)、`resolve_connections`(18664)、`linearize_nodes`(18913)、`fetch_*`、`ufbxi_finalize_scene`(21644)、`ufbxi_update_scene`(23809) | 16486-23936 | `Parse/{SceneBuild,SceneFinalize,SceneUpdate}.cs` | golden 哈希（frame 0） |
 | S4 动画求值 + 哈希：`ufbxi_evaluate_*`(25697-)、`test/hash_scene.c` | — | `Parse/{Evaluate,HashScene}.cs` | golden 全量 2179 行（任务 #9） |
 
-本轮认领：`src/Ufbx/Parse/{Properties,FbxId,Connections,ReadElement,Root,SceneBuild,SceneFinalize,SceneUpdate,Evaluate,HashScene}.cs`（尚未创建）、`tools/graph_oracle.*`、`tools/GraphCheck/`。S2 的叶子 reader 等 S1 管道落地后再按 mesh/anim/material 切给并行子代理，各自独立文件、**不得**改共享文件 `Parse/UfbxiContext.cs`（需要新字段就在 COORDINATION 登记由本线统一加）。
+本轮认领：`src/Ufbx.NET/Parse/{Properties,FbxId,Connections,ReadElement,Root,SceneBuild,SceneFinalize,SceneUpdate,Evaluate,HashScene}.cs`（尚未创建）、`tools/graph_oracle.*`、`tools/GraphCheck/`。S2 的叶子 reader 等 S1 管道落地后再按 mesh/anim/material 切给并行子代理，各自独立文件、**不得**改共享文件 `Parse/UfbxiContext.cs`（需要新字段就在 COORDINATION 登记由本线统一加）。
 
 ## 交接（load-spine 核收会话 → 接手任务 #20 的 agent，2026-10-02）
 
@@ -159,14 +159,14 @@
 
 ## 更新（编排会话，2026-10-03 22:15）——S3b 代理丢失产出，缺口与接力指令已登记
 
-1. **已核实的落地状态**（构建全绿，`dotnet build ufbx-cs.sln -c Release` 0 错）：
+1. **已核实的落地状态**（构建全绿，`dotnet build ufbx.net.sln -c Release` 0 错）：
    - 已落地并自检：S4a（`Parse/GeometryCache.cs` 87KB、`Parse/SceneOpts.cs` 27KB、`Parse/UfbxiContext.Cache.cs`，oracle `tools/s4a_oracle.*` + `tools/S4aCheck/`）；S4c（`Parse/Topology.cs` 55KB、`Parse/Subdivide.cs` 122KB，oracle `tools/s4c_oracle.*` + `tools/S4cCheck/`；**`ufbxi_finalize_mesh_material` 落在 Subdivide.cs:531**，勿重复移植）。
    - **S3b（19366-21643）与 S3c（21632-23935）完全缺失**：`ufbxi_fetch_maps`/`finalize_shader_texture`/`deduplicate_textures`/`fetch_file_textures`/`modify_geometry`/`postprocess_scene`/`validate_indices` 与 `ufbxi_finalize_scene`/`update_node`/`update_scene` 全链均无实现；前一个 S3b 代理无任何产出（无 SceneFinalize.cs、无 tools/s3b_oracle.*）。当前端口仍停在 `Load.cs:93` 的 `ufbxi_finalize_scene` seam。
    - 现状可用：**S4a 已代为落地 `AxisMatrix`（SceneOpts.cs:161）与 `RoundIfNear`（SceneOpts.cs:52）**，S3c 直接调用即可。
 2. **剩余桩**（全部待接）：`Load.cs:93`（S3b/S3c）；`SceneOpts.cs:370`（`ufbx_compute_topology` → 应接 `UfbxTopology.ComputeTopology`，S4c 已落地）；`SceneOpts.cs:163` 为过期桩（AxisMatrix 已实现，接力者应确认并删除该死代码）。
 3. **接力指令**：`C:/Workspace/ufbx-cs/HANDOFF_S3bc.md`——单代理完成 S3b+S3c（两段互相依赖，不拆给两个代理），含精确函数清单/行号、文件所有权、Load.cs seam 的完整驱动序列、既有接口速查表、硬性验证项（LoadCheck/GraphCheck/DomCheck/mathvec + s3bc oracle + 变异对照 + golden 首跑）。
 4. **golden 口径（已确认，务必传递）**：`test/hash_scene.c` 用 `load_external_files/evaluate_caches/evaluate_skinning/target_axes=right_handed_y_up/target_unit_meters=1.0`，frame>0 走 `ufbx_evaluate_scene`。故 S4a（已落地）与 S4b（未开始）都是 golden 必经路径；S4b 仍需独立波次。
-5. **所有权**：`Parse/{SceneFinalize,SceneUpdate}.cs`、`Parse/UfbxiContext.{SceneFinalize,SceneUpdate}.cs` 归接力者；`Parse/Load.cs` 的 seam 与 `tests/Ufbx.Tests/SceneProvider.cs` 的接线在接力任务书中授权。
+5. **所有权**：`Parse/{SceneFinalize,SceneUpdate}.cs`、`Parse/UfbxiContext.{SceneFinalize,SceneUpdate}.cs` 归接力者；`Parse/Load.cs` 的 seam 与 `tests/Ufbx.NET.Tests/SceneProvider.cs` 的接线在接力任务书中授权。
 
 ### 更正（22:20）——上条 item 1 关于 AxisMatrix 的判断有误
 `Parse/SceneOpts.cs:161-164` 的 `UfbxiSceneOpts.AxisMatrix` **是活桩**（throw `s4a-ufbxi_axis_matrix`，ufbx.c:23659-23677 未移植，S3c 范围），不是"已落地"。接力者必须实现它（建议实现在 `Parse/SceneUpdate.cs`，桩体改一行转发）。已落地且可直接调用的是：`RoundIfNear`（SceneOpts.cs:52）、`MirrorMatrix/MirrorMatrixDst/MirrorMatrixSrc`（SceneOpts.cs:107-150）。另 `Parse/SceneOpts.cs:370` 的 `ufbx_compute_topology` 桩应接 `UfbxTopology.ComputeTopology`（Topology.cs:1110，S4c 已落地）。HANDOFF_S3bc.md 已同步更正，并放开三处最小 diff 许可（Load.cs seam + SceneOpts.cs 两处桩体 + tests/SceneProvider.cs）。
@@ -178,14 +178,14 @@
 3. **已落地的修正**：`tools/s4b_oracle.c` 在 `#include "ufbx.c"` 之前加了 `#define UFBX_EXTERNAL_MATH`（带完整解释注释）+ 构建行加 `extra/ufbx_math.c`；`tools/s4b_oracle.exe/.txt` 已按新配置重建/重生成。新增证据工具 `tools/_s4b_mathref.c`（CRT vs ufbx_math 逐函数偏差实测：atan2 12.1%、pow 4.1%、cos 0.27%、sin 0.26%、atan 0.03%，sqrt/fabs/rint/tan/copysign/fmin/fmax/nextafter 为 0）。
 4. **其他 11 个 oracle 仍是 CRT 绑定**（animcurve/ascii/dom/graph/inflate/load/numeric/s3/s3bc/s4a/s4c/util，均未加该宏）。判定：**当前无害**，因为它们的 harness 全部 0 分歧，而端口实现的是 ufbx_math 语义 ⇒ 这些语料没触到会漂移的函数。**但任何重新生成/扩语料前必须先补 `#define UFBX_EXTERNAL_MATH` + 链 `extra/ufbx_math.c`**，否则会复现本轮的假阳性。后续波次若顺手，请把该宏补进各 oracle 源文件（2 行/文件，无需重跑）。
 5. **变异对照已做**（证明差分不空转）：对 `Parse/Evaluate.cs` 的 additive `compose_rotation` 分支做两处独立变异——(a) `Slerp(Identity,b,weight*(1+1e-7))`、(b) 整条四元数往返换成朴素 `result += value*weight`——**各自都使 S4bCheck 从 0 分歧变成 310 分歧**（310 = 该路径的敏感度足迹：任何扰动都会翻转这些 P/Q/R rollup）。两处均已还原，还原后 0 分歧、`dotnet build S4bCheck` 0 警告。
-6. **回归确认**：`dotnet run --project tests/Ufbx.Tests -c Release -- goldens tools/golden_hashes.txt` → **2179 files, 905 matched, 0 mismatched, 1274 load-errors**（1274 全部是 `frame>0`，需要 `ufbx_evaluate_scene` ⇒ 正是 S4b-2 的范围，不是回归）。`Parse/Load.cs` 的 element→scene 回指清扫无副作用。
-7. **所有权（本轮登记）**：`tools/s4b_oracle.{c,exe,txt}`、`tools/S4bCheck/`、`tools/_s4b_mathref.c`、`src/Ufbx/Parse/Evaluate.cs` 的求值段、`PORTING_NOTES.md`「浮点语义」新增小节归 S4b 线。`tools/_s4b_{trace,atan,atan2,mathvec,math2,probe}.c` 是本轮诊断遗留，已无用（`_s4b_math2.c` 的假设被第 2 条推翻），可在收口后删除。
-8. **下一步（S4b-2，已开始规划）**：场景深拷贝（替掉 `ufbxi_translate_element*` 26078-26111 的引用图 clone）→ `ufbxi_evaluate_imp`（26113-26454）→ `ufbxi_evaluate_scene`（26454-26520）→ 公开 `ufbx_evaluate_scene`（31186-31378），再把 `tests/Ufbx.Tests/SceneProvider.cs` 的 `frame>0` 接上跑 1274 条 golden。
+6. **回归确认**：`dotnet run --project tests/Ufbx.NET.Tests -c Release -- goldens tools/golden_hashes.txt` → **2179 files, 905 matched, 0 mismatched, 1274 load-errors**（1274 全部是 `frame>0`，需要 `ufbx_evaluate_scene` ⇒ 正是 S4b-2 的范围，不是回归）。`Parse/Load.cs` 的 element→scene 回指清扫无副作用。
+7. **所有权（本轮登记）**：`tools/s4b_oracle.{c,exe,txt}`、`tools/S4bCheck/`、`tools/_s4b_mathref.c`、`src/Ufbx.NET/Parse/Evaluate.cs` 的求值段、`PORTING_NOTES.md`「浮点语义」新增小节归 S4b 线。`tools/_s4b_{trace,atan,atan2,mathvec,math2,probe}.c` 是本轮诊断遗留，已无用（`_s4b_math2.c` 的假设被第 2 条推翻），可在收口后删除。
+8. **下一步（S4b-2，已开始规划）**：场景深拷贝（替掉 `ufbxi_translate_element*` 26078-26111 的引用图 clone）→ `ufbxi_evaluate_imp`（26113-26454）→ `ufbxi_evaluate_scene`（26454-26520）→ 公开 `ufbx_evaluate_scene`（31186-31378），再把 `tests/Ufbx.NET.Tests/SceneProvider.cs` 的 `frame>0` 接上跑 1274 条 golden。
 
 ## 更新（S4b-2 线会话，2026-10-04）——ufbx_evaluate_scene 落地，golden 2179/2179 全绿
 
 1. **交付**：
-   - `src/Ufbx/Parse/EvaluateScene.cs`（**新**，506 行）：`ufbxi_eval_context`（26054-26076）+
+   - `src/Ufbx.NET/Parse/EvaluateScene.cs`（**新**，506 行）：`ufbxi_eval_context`（26054-26076）+
      `ufbxi_evaluate_imp`（26113-26452）+ `ufbxi_evaluate_scene`（26454-26491）。C 的地址重base
      （`ufbxi_translate_element`，靠 `dst_element + (p - src_element)` 算术）在端口里是
      `Dictionary<UfbxElement,UfbxElement>`；C 的逐元素 `memcpy(dst, src, ufbx_element_type_size[type])` 是
@@ -203,11 +203,11 @@
      `update_shader_texture` 会写回去）。
    - `Parse/SceneUpdate.cs`：`MaterializeTypedList`（42 路 typed list 具体化）与 `CastArray` 提为
      `internal`，evaluate 复用同一份而不是复制那张 42 case 表。
-   - `tests/Ufbx.Tests/SceneProvider.cs`：`frame > 0` 接线（哈希 state 而非源场景，且 `FreeScene(src)`），
+   - `tests/Ufbx.NET.Tests/SceneProvider.cs`：`frame > 0` 接线（哈希 state 而非源场景，且 `FreeScene(src)`），
      `LoaderNotPortedException` 已无抛出点。
 2. **验收**：`goldens tools/golden_hashes.txt` → **2179 files, 2179 matched, 0 mismatched, 0 load-errors**
    （上一轮 905 matched / 1274 pending）。`S4bCheck` → **11761 行 / 0 分歧**。
-   `streamcheck` 2243020 checks / 3 failed（既有 3 条 ErrorType，非本轮回归）。`dotnet build ufbx-cs.sln -c Release` 0 错 0 警。
+   `streamcheck` 2243020 checks / 3 failed（既有 3 条 ErrorType，非本轮回归）。`dotnet build ufbx.net.sln -c Release` 0 错 0 警。
 3. **差分工具扩容**：`tools/s4b_oracle.c` 现在 `#include "test/hash_scene.h"` 并用 golden 自己的
    `ufbxt_hash_scene()`，新增两类记录：
    - `V <fi> <frame> <hash>`：`ufbx_evaluate_scene(scene, NULL, time_begin + frame/fps, NULL, &error)` 后哈希
@@ -216,7 +216,7 @@
      顺带证明，且 V 就是 golden 本身。
    - `W <fi> <hash>`：V 扫描跑完后重新哈希**源**场景（C 侧全是 push 新内存，源场景必然不变），
      用于抓"clone 与源共享可变存储"这类别名缺陷。
-   - `tools/S4bCheck.csproj` 把 `tests/Ufbx.Tests/HashScene.cs` 编进对拍器 ⇒ V 用的哈希与 golden 验收
+   - `tools/S4bCheck.csproj` 把 `tests/Ufbx.NET.Tests/HashScene.cs` 编进对拍器 ⇒ V 用的哈希与 golden 验收
      是同一份转写，不存在"两个 hasher 各自错"的可能。
 4. **变异对照**（证明差分不空转，均已还原）：
    - M1 `numAnimated = 0`（跳过属性求值）⇒ **261/270** 条 V 分歧（9 条不变的是无动画文件）。
@@ -230,27 +230,27 @@
    （26590-26650）填充，加载场景恒 0 条（oracle `S` 记录第 9 列全 0），所以
    `EvaluateElementProps` 里的窗口切片（必须切：`ufbx_evaluate_prop_flags_len` 见到非 0 override 数就
    早退，传整表会静默丢掉动画）要等 `ufbx_create_anim` 落地才有语料。
-6. **所有权（本轮登记）**：`src/Ufbx/Parse/EvaluateScene.cs`、`Api/UfbxApi.cs` 的 evaluate 段、
+6. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/EvaluateScene.cs`、`Api/UfbxApi.cs` 的 evaluate 段、
    `Model/**` 新增的 Clone* 原语、`Parse/SceneUpdate.cs` 的 `MaterializeTypedList/CastArray` 可见性改造、
-   `tests/Ufbx.Tests/SceneProvider.cs`、`tools/s4b_oracle.{c,exe,txt,err}`、`tools/S4bCheck/{Program.cs,S4bCheck.csproj}` 归 S4b 线。
-   `src/Ufbx/Parse/Evaluate.cs`（S4b-1）不动。
+   `tests/Ufbx.NET.Tests/SceneProvider.cs`、`tools/s4b_oracle.{c,exe,txt,err}`、`tools/S4bCheck/{Program.cs,S4bCheck.csproj}` 归 S4b 线。
+   `src/Ufbx.NET/Parse/Evaluate.cs`（S4b-1）不动。
 
 ## 更新（公开门面线会话，2026-10-04）——ufbx_as_* / 拓扑与顶点访问器 ABI 落地；S4b 差分扩到 X/Y
 
 1. **交付**：
-   - `src/Ufbx/Api/UfbxAs.cs`（**新**）：42 个 `ufbx_as_*` 降型（C: ufbx.c:33042-33083 / ufbx.h:5773-5814）。
+   - `src/Ufbx.NET/Api/UfbxAs.cs`（**新**）：42 个 `ufbx_as_*` 降型（C: ufbx.c:33042-33083 / ufbx.h:5773-5814）。
      刻意判 `element.Type` 而不是运行时类型（C 判 discriminant 后强转）。
-   - `src/Ufbx/Api/UfbxTopologyApi.cs`（**新**）：纯转发门面，28 个入口 = 拓扑 7 catch + 7 plain
+   - `src/Ufbx.NET/Api/UfbxTopologyApi.cs`（**新**）：纯转发门面，28 个入口 = 拓扑 7 catch + 7 plain
      （C: ufbx.c:32400/32485/32492/32502/32509/32542/32593 + 33173-33187 + 32588/32622）
      + 顶点访问器 5 catch + 5 plain（C: ufbx.c:33001-33040 / ufbx.h:5757-5769）。
      `ufbx_panic*` → `ref UfbxPanic`；plain 形式不带 panic（内部用 scratch panic，见 Topology.cs 文件头）。
      **不**包含 `ufbx_find_face_index`（32389-32398，属 find_* 组，未移植）与 `ufbx_generate_indices`（在 `UfbxGeometryApi`）。
-   - `src/Ufbx/Parse/Topology.cs`：新增 5 个 catch 访问器主体与 3 个此前缺的 inline plain 访问器
+   - `src/Ufbx.NET/Parse/Topology.cs`：新增 5 个 catch 访问器主体与 3 个此前缺的 inline plain 访问器
      （`GetVertexVec2/Vec4/WVec3`），并抽出 `IndicesCount()`/`ValueCount<T>()`：C 的非存在属性是
      NULL `values`/`indices` ⇒ count 0，端口是 null 数组 ⇒ 同样 0（越界检查因此照常触发，与 C 一致）。
      `CatchGetVertexWVec3` 保留 C 的细节：**界用 `values.count`，读的是 `values_w[ix]`**（ufbx.c:33038）。
 2. **验收**：`goldens` **2179/2179、0 分歧、0 load-error**；`S4bCheck` **11821 行 / 0 分歧**（新增 X 30 + Y 30）；
-   `S4cCheck` **332068 记录 / 0 失败**（拓扑段无回归）；`dotnet build ufbx-cs.sln -c Release` 0 错 0 警；
+   `S4cCheck` **332068 记录 / 0 失败**（拓扑段无回归）；`dotnet build ufbx.net.sln -c Release` 0 错 0 警；
    `streamcheck` 仍是既有 3 条 ErrorType（归错误形态线）。
 3. **差分扩容（`tools/s4b_oracle.c` + `tools/S4bCheck`）**：
    - `X <fi> <z> <i>`：语料里每张 mesh 的 7 个顶点属性（crease/uv/position/normal/tangent/bitangent/color）
@@ -291,15 +291,15 @@
      load/stream/stdio/open_memory（30414-30570，内部 25212-25455 与 6981-7235）、`ufbx_format_error`
      （30606-30642）、thread pool（32984-32995 + `ufbxi_thread_pool_execute` 6009-6017）、
      skinning（`ufbxi_evaluate_skinning` 26413-26419，仍是 NotPorted）。
-7. **所有权（本轮登记）**：`src/Ufbx/Api/UfbxAs.cs`、`src/Ufbx/Api/UfbxTopologyApi.cs`、
-   `src/Ufbx/Parse/Topology.cs` 的顶点访问器段与 `IndicesCount/ValueCount`、
+7. **所有权（本轮登记）**：`src/Ufbx.NET/Api/UfbxAs.cs`、`src/Ufbx.NET/Api/UfbxTopologyApi.cs`、
+   `src/Ufbx.NET/Parse/Topology.cs` 的顶点访问器段与 `IndicesCount/ValueCount`、
    `tools/s4b_oracle.{c,exe,txt}` 的 X/Y 段、`tools/S4bCheck/Program.cs` 的 Acc*/DumpVertexAccess/DumpSynthAccess
    归公开门面线；`tools/S4cCheck` 与 `Parse/Subdivide.cs` 未改。
 
 ## 更新（公开门面线会话 2，2026-10-04）——find_*/get_* 场景查找 ABI 落地；S4b 差分扩到 F（8 段/文件）
 
 1. **交付**：
-   - `src/Ufbx/Parse/SceneFind.cs`（**新**，`internal static class UfbxiSceneFind`）：ufbx.c:30738-30833
+   - `src/Ufbx.NET/Parse/SceneFind.cs`（**新**，`internal static class UfbxiSceneFind`）：ufbx.c:30738-30833
      的全部 9 个函数体（`find_element_len`、`get_prop_element`→复用 SceneFinalize、`find_prop_element_len`、
      `find_node_len`、`find_anim_stack_len`、`find_material_len`、`find_anim_prop_len`、`find_anim_props`、
      `get_compatible_matrix_for_normals`），加 `SafeString()` ＝ C 的 `ufbxi_safe_string`（5030-5034）物化版。
@@ -312,7 +312,7 @@
        拷贝切片，`null` ≡ `{ NULL, 0 }`（沿用 `FindShaderPropBindings` 的既有口径）。
        C 的 `length == SIZE_MAX`（"按 strlen 量"）不建模：那种串在 C 里也永远等不到真 interned 名，
        所以端口在这一点上没有可观测差异（文件头已注明）。
-   - `src/Ufbx/Parse/Evaluate.cs`：`UfbxEvaluate` 门面新增 **①** 5 个 strlen 属性访问转发
+   - `src/Ufbx.NET/Parse/Evaluate.cs`：`UfbxEvaluate` 门面新增 **①** 5 个 strlen 属性访问转发
      （`FindVec3/FindInt/FindBool/FindString/FindBlob`，C: 33152-33156）**②**查找组全区
      （C: 30720-30833 + 31413-31484 + 33157-33168）：`FindPropConcat`、`GetPropElement`、
      `FindPropElement(_len)`、`FindElement(_len)`、`FindNode(_len)`、`FindAnimStack(_len)`、`FindMaterial(_len)`、
@@ -321,7 +321,7 @@
      每个 strlen 形式都是 `X(name) => XLen(name, name != null ? name.Length : 0, …)`，每个 `_len` 形式进
      需要整串的主体前都过 `SafeString`。类头改述为"求值段 + 它所归属的 find_*/get_* 查找组"。
      **门面只做转发**，函数体仍在 `Parse/**`，于是既有 S4b/S4c/S3bc 差分继续覆盖同一份实现。
-2. **验收**：`dotnet build ufbx-cs.sln -c Release` 0 错 0 警；`goldens tools/golden_hashes.txt`
+2. **验收**：`dotnet build ufbx.net.sln -c Release` 0 错 0 警；`goldens tools/golden_hashes.txt`
    **2179/2179、0 分歧、0 load-error**；`S4bCheck` **12061 行 / 0 分歧（ALL MATCH）**（新增 `F` 240 条 =
    30 文件 × 8 段）；`S4cCheck` **332068 记录 / 0 失败**；`streamcheck` **2243020 / 3**（既有 3 条
    ErrorType，归 `ufbx_format_error` 线，非本轮回归）。
@@ -369,21 +369,21 @@
      load/stream/stdio/open_memory（30414-30570，内部 25212-25455 与 6981-7235）、`ufbx_format_error`
      （30606-30642）、thread pool（32984-32995 + 6009-6017）、skinning（26413-26419，仍是 NotPorted）。
      原清单里的"scene `find_*`（30720-30820）"**本轮已清**。
-7. **所有权（本轮登记）**：`src/Ufbx/Parse/SceneFind.cs`（新）、`src/Ufbx/Parse/SceneBuild.cs` 的
-   `LowerBoundEq/UpperBoundEq` 可见性、`src/Ufbx/Parse/Evaluate.cs` 的 `UfbxEvaluate` 查找组与 strlen 转发段、
+7. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/SceneFind.cs`（新）、`src/Ufbx.NET/Parse/SceneBuild.cs` 的
+   `LowerBoundEq/UpperBoundEq` 可见性、`src/Ufbx.NET/Parse/Evaluate.cs` 的 `UfbxEvaluate` 查找组与 strlen 转发段、
    `tools/s4b_oracle.{c,exe,txt}` 的 `F` 段、`tools/S4bCheck/Program.cs` 的 `DumpSceneFind`/`H*` 辅助归公开门面线；
    `tools/S4cCheck`、`Parse/Subdivide.cs`、`Parse/Topology.cs` 未改。
 
 ## 更新（公开门面线会话 3，2026-10-04）——`ufbx_find_face_index` 落地 + 引用计数族 + `ufbx_is_thread_safe`；`F` 扩到 9 段
 
 1. **交付**：
-   - `src/Ufbx/Parse/Topology.cs`：`UfbxTopology.FindFaceIndex`（C: `ufbx_find_face_index` ufbx.c:32389-32398，
+   - `src/Ufbx.NET/Parse/Topology.cs`：`UfbxTopology.FindFaceIndex`（C: `ufbx_find_face_index` ufbx.c:32389-32398，
      ufbx.h:5651）——复用 `Parse/SceneBuild.cs` 的 `LowerBoundEq`（宏的 `m_linear_size` 取字面 **4**：参考构建没有
      `UFBX_DEBUG_BINARY_SEARCH`/`UFBX_REGRESSION`，`ufbxi_clamp_linear_threshold()` ufbx.c:994-998 是恒等）。
      守卫写成 **`unchecked((ulong)index) > uint.MaxValue`**，这样它和 C 的无符号 `size_t` 比较完全同义：任何落在
      `[0, UINT32_MAX]` 之外的值（含 `-1`，C 侧就是 `SIZE_MAX`）都在触碰 mesh 之前被拒。`face_ix` 用 `-1` 表示 C 的
      `SIZE_MAX`，未命中经截断 cast 正好得到 `UFBX_NO_INDEX`。门面：`UfbxTopologyApi.FindFaceIndex(UfbxMesh, long)`。
-   - `src/Ufbx/Api/UfbxApi.cs`：引用计数族 `RetainScene`(30596-30604)、`Free/RetainAnim`(31228-31237/31239-31248)、
+   - `src/Ufbx.NET/Api/UfbxApi.cs`：引用计数族 `RetainScene`(30596-30604)、`Free/RetainAnim`(31228-31237/31239-31248)、
      `Free/RetainMesh`(32635-32644/32646-32655)、`Free/RetainGeometryCache`(32674-32683/32685-32694)、
      `Free/RetainLineCurve`(32367-32376/32378-32387) 登记为**有据可查的空操作**：端口没有 arena、也没有手写引用计数，
      C 的 `ufbxi_get_imp` + magic + `release/retain_ref` 在托管侧没有对应物（既有注记见 `Parse/Subdivide.cs:43-47`），
@@ -393,7 +393,7 @@
      **已用强制命令行实测参考构建返回 1**。
    - 顺手修正两处 ufbx.c 行号引用：`ufbx_free_scene` 是 **30586-30594**（原注释 30590-30600）、geometry cache 一对是
      **32674-32683 / 32685-32694**（原 32674-32684 / 32686-32696）。
-2. **验收**：`dotnet build ufbx-cs.sln -c Release` 0 错 0 警；`goldens tools/golden_hashes.txt`
+2. **验收**：`dotnet build ufbx.net.sln -c Release` 0 错 0 警；`goldens tools/golden_hashes.txt`
    **2179/2179、0 分歧、0 load-error**；`S4bCheck` **12091 行 / 0 分歧（ALL MATCH）**（`F` 由 240 条增到 270 条 =
    30 文件 × 9 段）；`S4cCheck` **332068 / 0 失败**；`streamcheck` **2243020 / 3**（既有 3 条 ErrorType，非本轮回归）。
 3. **差分扩段 `F <fi> 9`**（`tools/s4b_oracle.c::dump_scene_find` + `tools/S4bCheck/Program.cs::DumpSceneFind`）：
@@ -433,8 +433,8 @@
      内部 25212-25455 与 6981-7235）、`ufbx_format_error`（30606-30642）、thread pool（32984-32995 + 6009-6017）、
      skinning（`ufbxi_evaluate_skinning` 26413-26419，仍是 NotPorted）。
      上一轮清单里的"scene `find_*`"与"refcount 空操作 + `ufbx_is_thread_safe`"**本轮已清**。
-7. **所有权（本轮登记）**：`src/Ufbx/Parse/Topology.cs` 的面查找段（本轮新增）、`src/Ufbx/Api/UfbxTopologyApi.cs` 的
-   `FindFaceIndex`、`src/Ufbx/Api/UfbxApi.cs` 的引用计数族与 `IsThreadSafe`、`tools/s4b_oracle.{c,exe,txt}` 的 `F 9` 段、
+7. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/Topology.cs` 的面查找段（本轮新增）、`src/Ufbx.NET/Api/UfbxTopologyApi.cs` 的
+   `FindFaceIndex`、`src/Ufbx.NET/Api/UfbxApi.cs` 的引用计数族与 `IsThreadSafe`、`tools/s4b_oracle.{c,exe,txt}` 的 `F 9` 段、
    `tools/S4bCheck/Program.cs` 的 `DumpSceneFind` part 9 归公开门面线；`Parse/Subdivide.cs`、`Parse/SceneFind.cs`、
    `Parse/Evaluate.cs`、`tools/S4cCheck` 未改。**下一波按第 6 条"纯门面"顺序继续清（inflate → geometry cache →
    scene opts / blend 偏移），之后进入需要新 C 体的 bake 线。**
@@ -442,16 +442,16 @@
 ## 更新（公开门面线会话 4，2026-10-04）——门面批 G：inflate + geometry cache 公开 ABI 落地；S4a 扩到 1069 条（新增 `RD`/`RDO` 正控制）
 
 1. **交付（纯门面，只转发）**：
-   - `src/Ufbx/Api/UfbxInflateApi.cs`：`Inflate(dst, dstSize, input, retain)` ⇒ `UfbxiInflate.UfbxInflate`
+   - `src/Ufbx.NET/Api/UfbxInflateApi.cs`：`Inflate(dst, dstSize, input, retain)` ⇒ `UfbxiInflate.UfbxInflate`
      （C: ufbx.c:3135-3280，ufbx.h:5409；C 的 `size_t` 返回按"size_t → int"约定收窄）。
-   - `src/Ufbx/Api/UfbxGeometryCacheApi.cs`：6 个转发——`LoadGeometryCache`(24726-24763 / ufbx.h:5711)、
+   - `src/Ufbx.NET/Api/UfbxGeometryCacheApi.cs`：6 个转发——`LoadGeometryCache`(24726-24763 / ufbx.h:5711)、
      `LoadGeometryCacheLen`(ufbx.h:5714，先过 `UfbxiSceneFind.SafeString`)、`ReadGeometryCacheReal`(32704-32867)、
      `ReadGeometryCacheVec3`(32941-32951)、`SampleGeometryCacheReal`(32869-32939)、`SampleGeometryCacheVec3`(32953-32963)。
      `ufbxi_check_opts_ptr()`(32669) 的"忘记清零"哨兵对托管 options 不可表达（与 `UfbxApi.LoadMemory` 同注）。
    - C 体仍在 `Parse/GeometryCache.cs` / `Parse/Inflate.cs`，两个 harness 都已改走门面：`tools/InflateCheck/InflateCheck.cs:698`
      经 `UfbxInflateApi.Inflate`，`tools/S4aCheck/Program.cs:151/206` 与新的 RD 段经 `UfbxGeometryCacheApi`，
      所以**既有 998 条记录现在也在覆盖转发层本身**。
-2. **移植保真修正（`src/Ufbx/Parse/GeometryCache.cs` 读/采样路径 5 处）**：
+2. **移植保真修正（`src/Ufbx.NET/Parse/GeometryCache.cs` 读/采样路径 5 处）**：
    - 读缓冲元素数 4096 → **512**（`UFBXI_GEOMETRY_CACHE_BUFFER_SIZE`，ufbx.c:62，用在 32791）。注释里固定下这条推导：
      **分块对解码值不可见**——`mirror_ix` 由 `-= num_read` re-base(32838)，跨块保持全局 mod-3 相位，被取负的元素集合恒为
      `{g : g ≡ mirror_axis-1 (mod 3)}`；可见的只有 `read_fn` 的**请求尺寸序列**与 scratch 占用，故仍与 C 取齐。
@@ -483,19 +483,19 @@
      形态很差）；改 `userOpts ?? new …` 隔离后 ⇒ **3 条 `RDO`**（case 29/33/34 的 additive/use_weight/weight 泄漏）。
    - M5 去掉 mirror re-base ⇒ **25 条**；M6 去掉 endian swap ⇒ **52 条**（RD 的 BE 案例 + 既有 SMP 记录 659-663/724-728/
      765-769/805-809…：语料 `.mc` 是大端，说明 swap 早由 SMP 覆盖，本轮只是补齐 float/double 两条路径）。
-5. **验收**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；`InflateCheck` **4613/4613**；
+5. **验收**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；`InflateCheck` **4613/4613**；
    `S4aCheck tools/s4a_oracle.txt` **1069/1069、0 失败**；`goldens` **2179/2179**；`S4bCheck`（在
    `C:/Workspace/_analyze_ufbx` 下运行）**12091 行 / 0 分歧 ALL MATCH**；`S4cCheck` **332068 / 0**；
    `streamcheck` **2243020 / 3**（既有 3 条 ErrorType，非本轮回归）。`tools/s4a_oracle.{c,exe,txt}` 已换新版：exe 按
    s4a 强制命令（`-O2 -DNDEBUG -fno-strict-aliasing -std=c11 -mcpu=x86_64 -ffp-contract=off -I …`，**不加**
    `EXTERNAL_MATH`，它是 CRT 绑定的）重建，重跑输出与新 txt 逐字节相同。
-6. **所有权（本轮登记）**：`src/Ufbx/Api/UfbxInflateApi.cs`、`src/Ufbx/Api/UfbxGeometryCacheApi.cs`、
-   `src/Ufbx/Parse/GeometryCache.cs`（5 处保真修正）、`tools/s4a_oracle.{c,exe,txt}` 的 RD/RDO 块、
+6. **所有权（本轮登记）**：`src/Ufbx.NET/Api/UfbxInflateApi.cs`、`src/Ufbx.NET/Api/UfbxGeometryCacheApi.cs`、
+   `src/Ufbx.NET/Parse/GeometryCache.cs`（5 处保真修正）、`tools/s4a_oracle.{c,exe,txt}` 的 RD/RDO 块、
    `tools/S4aCheck/Program.cs` 的 `RdCases`/`RdStream`/`RdOpenCb`/`RunRdCase`/`DoRd`/`DoRdo`、
    `tools/InflateCheck/{InflateCheck.cs,InflateCheck.csproj}` 走门面那处，归公开门面线；`Parse/Inflate.cs`、
    `Parse/SceneFind.cs`、`tools/S4bCheck`、`tools/S4cCheck` 未改（后者只重编）。
    注意：`tools/InflateCheck.csproj` 是 `EnableDefaultCompileItems=false` 的隔离工程，**新增门面文件必须手工列进
-   `<Compile Include>`**；`tools/S4aCheck` 用 `..\..\src\Ufbx\**\*.cs` 通配，自动纳入。
+   `<Compile Include>`**；`tools/S4aCheck` 用 `..\..\src\Ufbx.NET\**\*.cs` 通配，自动纳入。
 7. **纯门面剩余 + 已知边角**：只剩 scene opts 位与 blend 偏移三件（SceneOpts.cs:405/495/520/528/550/580；
    `ufbx_add_blend_shape_vertex_offsets` 32070+ / `ufbx_add_blend_vertex_offsets` 32091+ 的 public 形态要先定
    `vertices` 缓冲 + `offset` 的入口形状，因为内部签名多一个 `offset`——托管侧传的是大数组窗口）。
@@ -506,7 +506,7 @@
 
 ## 更新（公开门面线会话 5，2026-10-04）——门面批 H：Skinning 公开 ABI 落地；S4a 扩到 1086 条（新增 `SKC`/`BSA` 正控制）
 
-1. **交付（纯门面，只转发）**：`src/Ufbx/Api/UfbxSkinApi.cs`（ufbx.h:5598-5622 "Skinning" 一节 7 个入口）——
+1. **交付（纯门面，只转发）**：`src/Ufbx.NET/Api/UfbxSkinApi.cs`（ufbx.h:5598-5622 "Skinning" 一节 7 个入口）——
    `CatchGetSkinVertexMatrix`(31936-32026 / ufbx.h:5600)、`GetSkinVertexMatrix`(ufbx.h:5601-5603，C 是 catch 形态的
    inline 包装，`panic == NULL`)、`GetBlendShapeOffsetIndex`(32028-32041)、`GetBlendShapeVertexOffset`(32043-32048)、
    `GetBlendVertexOffset`(32050-32068)、`AddBlendShapeVertexOffsets`(32070-32089)、`AddBlendVertexOffsets`(32091-32103)。
@@ -546,14 +546,14 @@
      删掉 `vertices == null` ⇒ `BSA 4` NRE，harness 以 EXCEPTION 中止（信号有效，形态差）。
    - **已知暗区**：删掉 `weight == 0.0` 提前返回**完全不可观测**——0.0 乘任何 offset 加进已清零缓冲仍是逐位相同的
      0.0（`BSA 1` 全 0），它是纯快路径而非语义。登记以免下轮误当成覆盖。
-5. **验收**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；`S4aCheck tools/s4a_oracle.txt` **1086/1086**；
+5. **验收**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；`S4aCheck tools/s4a_oracle.txt` **1086/1086**；
    `InflateCheck` **4613/4613**；`goldens` **2179/2179**；`S4bCheck`（`C:/Workspace/_analyze_ufbx` 下、绝对路径）
    **12091 行 / 0 分歧 ALL MATCH**；`S4cCheck` **332068 / 0**；`streamcheck` **2243020 / 3**（既有 3 条 ErrorType）；
    另补跑 `S3bcCheck`（须在 `_analyze_ufbx` 下跑，见其 Usage）**1477/1477**、`S3SceneCheck` **13546/0**、
    `NumericCheck` **280169**、`UtilCheck` **6865**、`HashCheck` **79**、`AnimCurveCheck` **8000**、
    `AsciiCheck` **1737**、`DomCheck`/`GraphCheck`(691)/`LoadCheck`/`S2GeomCheck` 全 PASS。
    `tools/s4a_oracle.{c,exe,txt}` 已换新版（exe 按 s4a 强制命令重建：**不加** `EXTERNAL_MATH`，CRT 绑定）。
-6. **所有权（本轮登记）**：`src/Ufbx/Api/UfbxSkinApi.cs`（新）、`src/Ufbx/Parse/SceneOpts.cs`（panic 站点 +
+6. **所有权（本轮登记）**：`src/Ufbx.NET/Api/UfbxSkinApi.cs`（新）、`src/Ufbx.NET/Parse/SceneOpts.cs`（panic 站点 +
    无符号 `size_t vertex`）、`tools/s4a_oracle.{c,exe,txt}` 的 SKC/BSA 块、`tools/S4aCheck/Program.cs` 的
    `SkinCatch`/`SkcFallbackMatrix`/`DoSkc`/`DoBsa`/`ToHex`/`ChkMsg` 与 BSI/SK/BSV/BVO/BAV 走门面那几处，
    归公开门面线。`Util/Print.cs` 只动过又还原（变异对照），现与备份逐字节相同。
@@ -564,17 +564,17 @@
 ## 更新（公开门面线会话 6，2026-10-04）——批 I：第一个"新 C 体"波次 `ufbx_format_error`；UtilCheck 扩到 7003 条（新增 `FE` 正控制）
 
 1. **交付**：
-   - `src/Ufbx/Util/ErrorFormat.cs`（新）：`UfbxiErrorFormat.FormatError(byte[] dst, int dstSize, UfbxError error)`
+   - `src/Ufbx.NET/Util/ErrorFormat.cs`（新）：`UfbxiErrorFormat.FormatError(byte[] dst, int dstSize, UfbxError error)`
      ← C `ufbx_format_error`（ufbx.c:30606-30642 / ufbx.h:5336），`size_t` 返回按"size_t → int"收窄。
      C 体里唯一需要新机制的是**带偏移的 snprintf**：C 写 `dst + offset, dst_size - offset`，
      端口把 `UfbxiPrintBuffer` 的 `Pos` 当绝对下标、`Length` 当窗口右端（`offset + size`），
      返回时再折回相对长度 —— `SnprintfAt` 的注释里固定了"`size >= 1` 是不变式而不是检查"这条推理：
      `offset` 只会走到 `dst_size - 1`，所以窗口永不为空；一旦为空，绝对下标写法会让结尾 `'\0'`
      落到窗口**前一字节**，而 C（长度是相对值，`length == 0` 时根本不写 NUL）什么都不写。
-   - `src/Ufbx/Api/UfbxErrorApi.cs`（新）：公开门面 `FormatError`，纯转发（这一节 ABI 里唯一的函数；
+   - `src/Ufbx.NET/Api/UfbxErrorApi.cs`（新）：公开门面 `FormatError`，纯转发（这一节 ABI 里唯一的函数；
      `ufbx_error`/`ufbx_error_frame`/`ufbx_error_type` 是数据，早已在 Model 里）。
      **UtilCheck 是第一个手工列入 `Api/*.cs` 的隔离 harness**（`EnableDefaultCompileItems=false`）。
-   - `src/Ufbx/Enums.cs`：新增 `UfbxConstants.SourceVersion`（ufbx.c:877，与 `HeaderVersion`(ufbx.h:270)
+   - `src/Ufbx.NET/Enums.cs`：新增 `UfbxConstants.SourceVersion`（ufbx.c:877，与 `HeaderVersion`(ufbx.h:270)
      分列两个宏）。三段拆位 `/1000000u`、`/1000u % 1000u`、`% 1000u` 逐字照抄。
 2. **为什么必须合成**：`ufbx_format_error` 在 ufbx.c 里**没有任何内部调用点**（grep 只有定义与声明），
    且参考构建 `UFBXI_FEATURE_ERROR_STACK == 0`（ufbx.c:108/170-172）把栈帧 push 整段编译掉 ⇒
@@ -606,7 +606,7 @@
      （`num` 本身就是 `min(pos, size-1)`，加上 `offset ≤ dst_size-1` 的归纳 ⇒ 上界永远不触），
      删掉它 0 条失败；真正的语义在 `if (num > 0)` 那一步。(b) `SourceVersion` 与 `HeaderVersion`
      在本构建同值（都是 23001），互换 0 条失败——它俩只有在 header/source 版本错配时才可区分。
-5. **验收**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；`UtilCheck tools/util_oracle.txt`
+5. **验收**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；`UtilCheck tools/util_oracle.txt`
    **7003/7003**（原 6865 + 69×2）；`goldens` **2179/2179**；`S4aCheck` **1086/1086**；
    `S4bCheck`（`_analyze_ufbx` 下、绝对路径）**12091 行 / 0 分歧 ALL MATCH**；`S4cCheck` **332068 / 0**；
    `S3bcCheck`（同 cwd）**1477/1477**；`InflateCheck` **4613/4613**；`streamcheck` **2243020 / 3**（既有 3 条 ErrorType）；
@@ -615,8 +615,8 @@
    `tools/util_oracle.{c,exe,txt}` 已换新版：exe 用 `zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off
    -I C:/Workspace/_analyze_ufbx`（**已实测**该命令重建的非 FE 前缀与旧 `util_oracle.txt` 逐字节相同，
    故把 util_oracle.c 头部注释的命令也补成这一串；此 oracle 不绑 CRT、加不加 `EXTERNAL_MATH` 均可，本轮未加）。
-6. **所有权（本轮登记）**：`src/Ufbx/Util/ErrorFormat.cs`、`src/Ufbx/Api/UfbxErrorApi.cs`、
-   `src/Ufbx/Enums.cs` 的 `SourceVersion`、`tools/util_oracle.{c,exe,txt}` 的 FE 块、
+6. **所有权（本轮登记）**：`src/Ufbx.NET/Util/ErrorFormat.cs`、`src/Ufbx.NET/Api/UfbxErrorApi.cs`、
+   `src/Ufbx.NET/Enums.cs` 的 `SourceVersion`、`tools/util_oracle.{c,exe,txt}` 的 FE 块、
    `tools/UtilCheck/{Program.cs,UtilCheck.csproj}` 的 FE 段，归公开门面线。
    `Util/Print.cs` **未改**（`SnprintfAt` 建在新文件里，用现成的 `UfbxiPrintBuffer`/`Vprint`）。
    **纯门面一波（A-H）到此清完，批 I 起进入"新 C 体"阶段。** 公开 ABI 台账（本轮用
@@ -636,7 +636,7 @@
 ## 更新（bake 线会话 7，2026-10-04）——批 J + 批 J-补：bake 链主体落地，bake 差分 50261 条 0 分歧；顺带定稿"规则 11：C 的 `f` 字面量会被拓宽进 `ufbx_real`"
 
 1. **交付（批 J）**：
-   - `src/Ufbx/Parse/Bake.cs`（新，**1427 行**）：`ufbxi_bake_*` 全链逐函数移植，覆盖
+   - `src/Ufbx.NET/Parse/Bake.cs`（新，**1427 行**）：`ufbxi_bake_*` 全链逐函数移植，覆盖
      `ufbxi_bake_time/prop/context`（26688-26738）、`bake_prop_less`/`cmp_bake_time`/`bake_push_time`
      （26740-26771）、`bake_times`（26773-26821）与四张属性名表（26823-26838，端口用 interned 字符串的
      引用同一性复刻 C 的指针比较）、`sort_bake_times`（26848-26853，稳定 + 32 插入块）、
@@ -648,7 +648,7 @@
      `bake_anim_imp`（27715-27773）；公开侧 `ufbx_bake_anim`（31250-31297）、retain/free（31299-31317）、
      `find_baked_{node,element}[_by_*]`（31320-31346）、`evaluate_baked_{vec3,quat}`（31348-31411，
      含二分→8 窗口→线性扫的完整形态）。
-   - `src/Ufbx/Api/UfbxBakeApi.cs`（新，70 行）：9 个 `ufbx_abi` 名字的纯转发包，文件头登记了三条**不可表达**的
+   - `src/Ufbx.NET/Api/UfbxBakeApi.cs`（新，70 行）：9 个 `ufbx_abi` 名字的纯转发包，文件头登记了三条**不可表达**的
      偏离：C 的 `find_*` 返回 `data[]` 内部指针（端口返回副本 ⇒ 身份与"经返回值写回"无对应物，miss = `null`）；
      空 list 时 C 读 `data[count-1]` == `data[-1]`（UB，端口索引 -1 抛）；`ufbx_assert(scene)` 在参考构建是 no-op。
    - `tools/bake_oracle.c`（新，618 行）+ `bake_oracle.exe` + `bake_oracle.txt`（**79541 行**）：
@@ -728,7 +728,7 @@
      （`bake_oracle.c:574-585`），`pivot_handling` 保持默认 `RETAIN`(=0)，而 `pivotEpsilon` 唯一消费者
      `SceneBuild.cs:505-514` 在 `AdjustToPivot` 门内 ⇒ 本差分不可达（要补得加加载 opts 维度）。
      (g) 4 处加载器修正（fps 三格 + ui_color + 0.99999f×2）＝**潜伏保真修正**：审计正确、当前差分观测不到。
-6. **验收（本轮实测，非引用旧日志）**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；
+6. **验收（本轮实测，非引用旧日志）**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；
    `BakeCheck`（在 `_analyze_ufbx` 下、绝对路径两个参数）**records 50261 / input(T) 29280 / mismatches 0 — ALL MATCH**；
    `goldens` **2179/2179，0 load-errors**；`streamcheck` **2243020 / 3**（既有 3 条 ErrorType，属另一条线）；
    `S3bcCheck` **1477/1477**；`S4bCheck` **12091 行 / 0 分歧 ALL MATCH**；`S4cCheck` **332068 / 0**；`S4aCheck` **1086**；
@@ -737,11 +737,11 @@
    `DomCheck`/`GraphCheck`(691)/`LoadCheck`/`S2GeomCheck` 全 PASS。回归电池脚本：`tools/_scratch/battery.sh`
    （`run <label> <cwd> <cmd…>` + 汇总 grep，可传 label 过滤；已知瑕疵：s3bc/animcurve/ascii 的汇总行不在
    它的 grep 里，需手工补看）。
-7. **所有权（本轮登记）**：`src/Ufbx/Parse/Bake.cs`、`src/Ufbx/Api/UfbxBakeApi.cs`、
+7. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/Bake.cs`、`src/Ufbx.NET/Api/UfbxBakeApi.cs`、
    `tools/bake_oracle.{c,exe,txt}`、`tools/BakeCheck/`、`tools/bake_corpus.txt`、
    `tools/_bake_helper_probe*`、`tools/_mut_bake*`、`tools/_mut_goldens.sh`、`tools/_mut_eps_*`、
    `tools/_scratch/{battery.sh,ufbx_dbg/,*.bak}`，以及本波改动过的
-   `src/Ufbx/Parse/{SceneBuild,SceneUpdate,Evaluate}.cs` 的 float 字面量行，归 bake 线。
+   `src/Ufbx.NET/Parse/{SceneBuild,SceneUpdate,Evaluate}.cs` 的 float 字面量行，归 bake 线。
    `SceneBuild.cs` 的 epsilon 三行**同时**是加载线的承重件（goldens 依赖），改它必须重跑 goldens + BakeCheck 两条。
 8. **公开 ABI 台账更新**：bake 族 **9 个已全部落地**（`bake_anim`、`retain/free_baked_anim`、
    `find_baked_{node,element}[by_*]`、`evaluate_baked_{vec3,quat}`）。ufbx.h 的 114 个 `ufbx_abi` 里
@@ -759,14 +759,14 @@
 > 剩 **12 个**两族（stream/stdio/open 9、thread pool 3）。
 
 1. **交付**：
-   - `src/Ufbx/Parse/CreateAnim.cs`（新，307 行，`UfbxiCreateAnim`）：整链逐函数移植——
+   - `src/Ufbx.NET/Parse/CreateAnim.cs`（新，307 行，`UfbxiCreateAnim`）：整链逐函数移植——
      `ufbxi_check_string`（26506-26518）、`ufbxi_push_anim_string`（26520-26534，含 `prev_name` 短路）、
      三个比较器 `prop_override_prop_name_less`/`prop_override_less`/`transform_override_less`（26536-26558）、
      `ufbxi_create_anim_imp`（26560-26676，116 行本体）、`ufbx_create_anim` 的 ABI 壳（31202-31226）。
      文件头登记了 4 条**不可表达**偏离：`length == SIZE_MAX ⇒ strlen` 的哨兵形态、arena 拷贝在托管侧
      只是引用（⇒ 身份不可观测）、分配器/`ufbxi_anim_imp` 引用计数与 magic 为 no-op、`(int64_t)double`
      越界在 C 是 UB。
-   - `src/Ufbx/Api/UfbxApi.cs:111`：`CreateAnim(scene, opts, error)` 门面；`FreeAnim`/`RetainAnim` 的注释同步
+   - `src/Ufbx.NET/Api/UfbxApi.cs:111`：`CreateAnim(scene, opts, error)` 门面；`FreeAnim`/`RetainAnim` 的注释同步
      更新（create_anim 现在真的置 `Custom`，但那对仍 no-op，因为没有 arena）。
    - `tools/create_anim_oracle.c`（新，731 行）+ `create_anim_oracle.exe` + `create_anim_oracle.txt`
      （**21762 行**）：`zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off -DUFBX_EXTERNAL_MATH
@@ -831,7 +831,7 @@
      `Q_intern_tail`（永不命中表尾 `"d|Z"`，只换引用不换字节）。
      ⇒ 由此确认 create_anim 的 **intern 只有"选错实例"这一半可被内容文法照到**（`C_intern_blind` 1820 条），
      "选对实例但换对象"那一半在任何语料下都照不到；后续波次不要为它加语料，要靠论证守。
-6. **验收（本轮实测）**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；
+6. **验收（本轮实测）**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；
    `CreateAnimCheck` **records 13676 / input 8086 / mismatches 0 — ALL MATCH**（约 2.5s）；
    回归电池 `tools/_scratch/battery.sh` **全绿**：goldens **2179/2179（0 load-errors）**、
    mathvec 72000、util 7003、inflate 4613、dom/graph 691/load/s2geom/s3scene 13546/hash 79、
@@ -841,7 +841,7 @@
    电池脚本本轮修了三处：grep 补 `passed|failed|CHECK`（原先 s3bc/animcurve/ascii 的汇总行被吞）、
    `run s3bc` 补传绝对 oracle 路径（原先在 `_analyze_ufbx` 下报 `oracle not found` 后 exit=2）、
    新增 `run createanim`。汇总存 `tools/_scratch/battery_after_K.txt`。
-7. **所有权（本轮登记）**：`src/Ufbx/Parse/CreateAnim.cs`、`src/Ufbx/Api/UfbxApi.cs` 的 `CreateAnim` 段、
+7. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/CreateAnim.cs`、`src/Ufbx.NET/Api/UfbxApi.cs` 的 `CreateAnim` 段、
    `tools/create_anim_oracle.{c,exe,txt}`、`tools/create_anim_corpus.txt`、`tools/CreateAnimCheck/`、
    `tools/_mut_createanim.sh`、`tools/_mut_ca_cases.txt`、`tools/_mut_ca_sweep_K.txt`、
    `tools/_scratch/{CreateAnim.cs.bak,battery.sh,battery_after_K.txt}`，归 bake/动画创建线。
@@ -859,19 +859,19 @@
 > 剩 **3 个**（thread pool：`run_task`/`set_user_ptr`/`get_user_ptr`）。
 
 1. **交付**：
-   - `src/Ufbx/Parse/StreamOpen.cs`（新，253 行，`UfbxiStreamOpen`）：`ufbxi_file_context`（6941-6946）、
+   - `src/Ufbx.NET/Parse/StreamOpen.cs`（新，253 行，`UfbxiStreamOpen`）：`ufbxi_file_context`（6941-6946）、
      `ufbxi_begin/end_file_context`（6948-6975）、`ufbxi_fopen`（6981-7065，**只建模 `_WIN32` 分支**）、
      `ufbxi_stdio_open`（7135-7141）、`ufbx_open_file{,_ctx}`（30420-30443）、`ufbx_open_memory{,_ctx}`
      （30445-30503）、`ufbx_default_open_file`（30414-30418）。文件头登记 6 条不可表达偏离（分配失败、
      `ctx` 只是父分配器、`_begin_zero` 断言、"失败不动调用方 `ufbx_stream`"、"只建模 `_WIN32`"、
      `ufbxi_memory_close()` 二次调用在 C 是 double free）。
-   - `src/Ufbx/Parse/InputStreams.cs`：`UfbxMemoryInputStream` 补 `close_cb` 与
+   - `src/Ufbx.NET/Parse/InputStreams.cs`：`UfbxMemoryInputStream` 补 `close_cb` 与
      `(byte[],int,UfbxCloseMemoryCb)` 构造（无 closed 守卫，对应 C 的 double free 语义），
      `UfbxFileInputStream` 补 `(FileStream, bool ownsHandle)` 构造（`close=false` 是
      `ufbx_load_stdio_prefix`，30546）。
-   - `src/Ufbx/Api/UfbxApi.cs`：9 个公开门面条目 + `using System.IO;`（stdio 条目把 C 的 `void *file_void`
+   - `src/Ufbx.NET/Api/UfbxApi.cs`：9 个公开门面条目 + `using System.IO;`（stdio 条目把 C 的 `void *file_void`
      拼成 `FileStream`，所以这个文件——不只是 Parse/InputStreams.cs——依赖它）。
-   - `src/Ufbx/Parse/Load.cs`：`DefaultOpenFile` 委托 + `UfbxiOpenFileStream` 持有者 + 延迟打开块
+   - `src/Ufbx.NET/Parse/Load.cs`：`DefaultOpenFile` 委托 + `UfbxiOpenFileStream` 持有者 + 延迟打开块
      （840-888，含 `filename_len == SIZE_MAX ⇒ strlen` 与"传给回调的是**已解析**的长度"）+ **进度接线**。
    - `tools/stream_oracle.c`（新，1089 行）+ `stream_oracle.exe` + `stream_oracle.txt`（**13996 行**）：
      `zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off -DUFBX_EXTERNAL_MATH
@@ -946,7 +946,7 @@
      (f) `Q_ascii_io_nodesc`（IO 错误站点不写描述）＝**按构造等价**：唯一走到它的变体 53/文件 1 加载
      **成功**，成功尾 `ufbxi_clear_error` 把描述抹掉（ufbx.c:25618）。
      ⇒ 6 例全部是"按构造等价"或"被另一条规则掩盖"，**没有一例是语料/harness 缺口**。
-7. **验收（本轮实测）**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；
+7. **验收（本轮实测）**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；
    `StreamCheck` **records 11395 / input 2808 / mismatches 0 — ALL MATCH**；
    回归电池 `tools/_scratch/battery.sh` 全绿，与批 K 基线逐项一致：goldens **2179/2179（0 load-errors）**、
    mathvec 72000、util 7003、s4a 1086、inflate 4613、dom/graph 691、load 0 分歧、s2geom 0、
@@ -955,9 +955,9 @@
    **`streamcheck` 2243020 / 3 failed（既有 3 条 ErrorType，属另一条线，未变）**，
    新增 `run stream`（从 `_analyze_ufbx` 跑，oracle 与 corpus 都传绝对路径）。
    汇总存 `tools/_scratch/battery_after_L.txt`。
-8. **所有权（本轮登记）**：`src/Ufbx/Parse/StreamOpen.cs`、`src/Ufbx/Parse/InputStreams.cs`、
-   `src/Ufbx/Api/UfbxApi.cs` 的 stream/stdio/open 段、`src/Ufbx/Parse/Load.cs` 的延迟打开与进度接线段、
-   `src/Ufbx/Parse/Ascii.cs` 的 `Refill()`、`tools/stream_oracle.{c,exe,txt}`、`tools/stream_corpus.txt`、
+8. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/StreamOpen.cs`、`src/Ufbx.NET/Parse/InputStreams.cs`、
+   `src/Ufbx.NET/Api/UfbxApi.cs` 的 stream/stdio/open 段、`src/Ufbx.NET/Parse/Load.cs` 的延迟打开与进度接线段、
+   `src/Ufbx.NET/Parse/Ascii.cs` 的 `Refill()`、`tools/stream_oracle.{c,exe,txt}`、`tools/stream_corpus.txt`、
    `tools/stream_port.txt`、`tools/StreamCheck/`、`tools/_mut_stream.sh`、`tools/_mut_stream_cases.txt`、
    `tools/_mut_stream_sweep_L.txt`、`tools/_scratch/{StreamOpen,InputStreams,Load,Ascii,UfbxApi}.cs.bak`、
    `tools/_scratch/{battery.sh,battery_after_L.txt}`，归流/stdio 线。
@@ -975,21 +975,21 @@
 > 的"未移植公开 ABI"归零**。剩下的是覆盖深度，不是门面（见第 8 条）。
 
 1. **交付**：
-   - `src/Ufbx/Parse/ThreadPool.cs`（新，~390 行）：`ufbxi_task`/`ufbxi_task_imp`/`ufbxi_task_group`/
+   - `src/Ufbx.NET/Parse/ThreadPool.cs`（新，~390 行）：`ufbxi_task`/`ufbxi_task_imp`/`ufbxi_task_group`/
      `ufbxi_thread_pool`（5973-6007）、`execute`（6009-6017）、`update_finished`（6019-6029）、
      `wait_imp`/`wait_group`/`wait_all`（6031-6065）、`init`（6067-6089）、`free`（6093-6108）、
      `available_tasks`（6110-6113）、`flush_group`（6115-6128）、`create_task`（6130-6151）、
      静态 `run_task`（6153-6159），以及 `ufbx_thread_pool_context` 句柄注册表。
      文件头登记不可表达项（task 数组的分配失败 #4、真实并发、NULL `imp->fn`）。
-   - `src/Ufbx/Api/UfbxApi.cs`：`ThreadPoolRunTask` / `ThreadPoolSetUserPtr` /
+   - `src/Ufbx.NET/Api/UfbxApi.cs`：`ThreadPoolRunTask` / `ThreadPoolSetUserPtr` /
      `ThreadPoolGetUserPtr`（三个 `ufbx_unsafe` ABI），非法 ctx 抛
      `UfbxiThreadContextException`（**不是** `UfbxParseError`：C 没有这种失败，不能变成 `ufbx_error`）。
-   - `src/Ufbx/Parse/Load.cs`：`ThreadPoolInit` 改为构造真正的 `UfbxiThreadPool`（并把它的 ctx 交给
+   - `src/Ufbx.NET/Parse/Load.cs`：`ThreadPoolInit` 改为构造真正的 `UfbxiThreadPool`（并把它的 ctx 交给
      `init_fn`，此前传的是 `default(nint)`）；`FreeTemp()` 补 `ufbxi_thread_pool_free`（25421-25422）。
-   - `src/Ufbx/Parse/Objects.cs`：`ReadObjectsThreaded` 从"退化成顺序遍历"升级为 C 的批处理循环
+   - `src/Ufbx.NET/Parse/Objects.cs`：`ReadObjectsThreaded` 从"退化成顺序遍历"升级为 C 的批处理循环
      （15132-15237：每批先 `WaitGroup`、读上一批、`FlushGroup`，`max_tasks =
      min(num_tasks/GROUPS, available_tasks())`）。
-   - `src/Ufbx/Parse/Root.cs`：`ParseToplevelChildOwned()` —— C 传非 NULL `tmp_buf` 的那种形态，
+   - `src/Ufbx.NET/Parse/Root.cs`：`ParseToplevelChildOwned()` —— C 传非 NULL `tmp_buf` 的那种形态，
      每个子节点一个新 `UfbxiNode`（原来的 `uc.TopChild` 复用对象撑不住"整批先解析后读取"）。
    - 两个任务生产者接入环形队列：binary 的 DEFLATE 任务（`Parse/DomNode.cs`，`RunDeflateTask` 改写成
      `UfbxiDeflateTask` 载荷 + `DeflateTaskFn`，站点 9090-9131）与 ASCII 的延迟数组任务
@@ -1062,7 +1062,7 @@
      cancel 时返回 -28，而 deflate 任务跑的是 `progress_cb.fn == NULL`（ufbx.c:8918-8927）。
      (i) `Q_ascii_inline_fallback`（改内联回退的错误文本）＝**不可达**：只有"环形队列拒绝创建任务"
      才走到，而差分里没有那种变体（见第 2 条）。
-6. **验收（本轮实测）**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；
+6. **验收（本轮实测）**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；
    `PoolCheck` **records 1688 / input 336 / mismatches 0 — ALL MATCH**；
    `tools/_scratch/battery.sh` 与批 L 基线逐项一致：goldens **2179/2179（0 load-errors）**、
    mathvec 72000、util 7003、s4a 1086、inflate 4613、dom/graph 691、load 0 分歧、s2geom 0、
@@ -1070,11 +1070,11 @@
    s4b 12091 行 0 分歧、s4c 332068、s3bc 1477、bake 50261/0、createanim 13676/0、
    stream 11395/0、**streamcheck 2243020 / 3 failed（既存，未动）**、新增 `run pool`。
    汇总存 `tools/_scratch/battery_after_M.txt`。
-7. **所有权（本轮登记）**：`src/Ufbx/Parse/ThreadPool.cs`、`src/Ufbx/Parse/Objects.cs` 的
-   `ReadObjectsThreaded`、`src/Ufbx/Parse/Root.cs` 的 `ParseToplevelChildOwned`、
-   `src/Ufbx/Parse/DomNode.cs` 的 `UfbxiDeflateTask`/`DeflateTask*`、`src/Ufbx/Parse/AsciiDomNode.cs`
-   的延迟数组分支与 `AsciiArrayTaskFn`、`src/Ufbx/Parse/Load.cs` 的 `ThreadPoolInit`/`FreeTemp` 段、
-   `src/Ufbx/Api/UfbxApi.cs` 的线程池三件套、`tools/pool_oracle.{c,exe,txt}`、`tools/pool_corpus.txt`、
+7. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/ThreadPool.cs`、`src/Ufbx.NET/Parse/Objects.cs` 的
+   `ReadObjectsThreaded`、`src/Ufbx.NET/Parse/Root.cs` 的 `ParseToplevelChildOwned`、
+   `src/Ufbx.NET/Parse/DomNode.cs` 的 `UfbxiDeflateTask`/`DeflateTask*`、`src/Ufbx.NET/Parse/AsciiDomNode.cs`
+   的延迟数组分支与 `AsciiArrayTaskFn`、`src/Ufbx.NET/Parse/Load.cs` 的 `ThreadPoolInit`/`FreeTemp` 段、
+   `src/Ufbx.NET/Api/UfbxApi.cs` 的线程池三件套、`tools/pool_oracle.{c,exe,txt}`、`tools/pool_corpus.txt`、
    `tools/pool_port.txt`、`tools/PoolCheck/`、`tools/_mut_pool.sh`、`tools/_mut_pool_cases.txt`、
    `tools/_mut_pool_sweep_M.txt`、`tools/_scratch/{ThreadPool,Objects,DomNode,AsciiDomNode,Root,Load,
    UfbxiContext,UfbxApi}.cs.bak`、`tools/_scratch/{battery.sh,battery_after_M.txt}`、
@@ -1095,7 +1095,7 @@
 ## 更新（skinning 求值线会话 11，2026-10-04）——批 N：`ufbxi_evaluate_skinning` 的 evaluate 侧落地，定稿 PORTING_NOTES 规则 15
 
 > 本节**修正上一节第 8 条对"skinning 求值体"欠账的描述**：`ufbxi_evaluate_skinning()` 本体
-> （ufbx.c:25063-25177）**早已移植完毕**（`src/Ufbx/Parse/SceneOpts.cs`），且**载入侧调用点
+> （ufbx.c:25063-25177）**早已移植完毕**（`src/Ufbx.NET/Parse/SceneOpts.cs`），且**载入侧调用点
 > (25371) 早就被 goldens 覆盖** —— `test/hash_scene.c:103` 给 `ufbx_load_opts` 设了
 > `evaluate_skinning = true`，而 `test/hash_scene.h:620-622` 哈希 `skinned_is_local` /
 > `skinned_position` / `skinned_normal`，所以 2179/2179 的 goldens 已经逐位证明了载入侧。
@@ -1105,7 +1105,7 @@
 > 局部变量填了却从未被传），所以任何 golden 都到不了这里。
 
 1. **交付（一处接线 + 两套测具，不是重写）**：
-   - `src/Ufbx/Parse/EvaluateScene.cs`：把 `NotPorted("ufbxi_evaluate_skinning (S4c)")` 换成 C:26413-26419
+   - `src/Ufbx.NET/Parse/EvaluateScene.cs`：把 `NotPorted("ufbxi_evaluate_skinning (S4c)")` 换成 C:26413-26419
      的本体 —— `cache_opts.open_file_cb = ec->opts.open_file_cb`、
      `ufbxi_evaluate_skinning(&ec->scene, &ec->error, ..., ec->time,
      ec->opts.load_external_files && ec->opts.evaluate_caches, &cache_opts)`。
@@ -1173,7 +1173,7 @@
      `ERROR: 0 occurrences` 且 `Q_skin_sentinel` 拿到污染结果（30 条）。已 `cp` + `cmp` 从
      `tools/_scratch/SceneOpts.cs.bak` 还原并复跑这两例，最终值：`C_skin_normal_smooth` **30 条（咬）**、
      `Q_skin_sentinel` **0 条（不咬）**。**教训：sweep 必须整批后台跑，不要用会被 SIGTERM 的前台循环。**
-5. **验收（本轮实测）**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；
+5. **验收（本轮实测）**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；
    `SkinCheck` **records 1453 / input 221 / mismatches 0 — ALL MATCH**；
    oracle 两次运行 `diff` 一致（DETERMINISTIC）；
    `tools/_scratch/battery.sh` 与批 M 基线逐项一致：goldens **2179/2179（0 load-errors）**、
@@ -1182,7 +1182,7 @@
    s4c 332068、s3bc 1477、bake 50261/0、createanim 13676/0、stream 11395/0、pool 1688/0、
    **streamcheck 2243020 / 3 failed（既存，未动）**、新增 `run skin`。
    汇总存 `tools/_scratch/battery_after_N.txt`。
-6. **所有权（本轮登记）**：`src/Ufbx/Parse/EvaluateScene.cs` 的 C:26413-26419 段、
+6. **所有权（本轮登记）**：`src/Ufbx.NET/Parse/EvaluateScene.cs` 的 C:26413-26419 段、
    `tools/skin_oracle.{c,exe,txt}`、`tools/skin_corpus.txt`、`tools/SkinCheck/`、
    `tools/_mut_skin.sh`、`tools/_mut_skin_cases.txt`、`tools/_mut_skin_sweep_N.txt`、
    `tools/_scratch/{_skin_probe.c,_skin_probe.exe,_skin_probe.txt,_allfbx.txt}`、
@@ -1203,7 +1203,7 @@
 ## 更新（pivot 维度线会话 12，2026-10-04）——批 O：`pivot_handling` 载入选项维度落地差分，定稿 PORTING_NOTES 规则 16
 
 > 本节**修正上一节第 7 条第 1 项对缺口的描述**：`pivot_handling` 的**本体早已移植完毕**
-> （`src/Ufbx/Parse/SceneBuild.cs:464-583`，对照 ufbx.c:18329-18457 逐行核对无差异），
+> （`src/Ufbx.NET/Parse/SceneBuild.cs:464-583`，对照 ufbx.c:18329-18457 逐行核对无差异），
 > 本批**没有改一行端口代码**，只建了证明。另有一点必须先说清：**goldens 一次都不会进入
 > pivot 块** —— `test/hash_scene.c` 全文没有 `pivot` / `geometry_transform_handling` /
 > `inherit_mode` 字样（load opts 就是 `{0}`），而 `UFBX_PIVOT_HANDLING_RETAIN` 就是 **0**
@@ -1284,7 +1284,7 @@
      反向对照 `C_eps_huge`（改 1e300）**咬 452 条**，证明 `err > 0.001` 的情形确实存在
      （`rotNeScl` 全局 31），只是**没有落在那个窄区间内**。
      ⇒ 两例都属于"要手搓 FBX 才能补"的语料缺口，与批 N 的 (f)/(g) 同类。
-5. **验收（本轮实测）**：`dotnet build ufbx-cs.sln -c Release` **0 错 0 警**；
+5. **验收（本轮实测）**：`dotnet build ufbx.net.sln -c Release` **0 错 0 警**；
    `PivotCheck` **records 4342 / input 408 / mismatches 0 — ALL MATCH**；
    oracle 两次运行 `diff` 一致（DETERMINISTIC）；
    `tools/_scratch/battery.sh` 与批 N 基线逐项一致 + 新增 `run pivot`。
@@ -1336,10 +1336,10 @@
 
 ### 2. 端口代码：一行未改
 
-`src/Ufbx/Parse/SceneBuild.cs:605-668`（建 helper 主循环 + 递归子节点）、
-`src/Ufbx/Parse/ReadElement.cs:274-320`（`SetupScaleHelper`）、
-`src/Ufbx/Parse/Evaluate.cs:941-972`（helper 的 scale 折进子节点 translation）、
-`src/Ufbx/Parse/Bake.cs:757-777 / 825-845 / 903-940`（`scale_helper_t` / `_s`）——
+`src/Ufbx.NET/Parse/SceneBuild.cs:605-668`（建 helper 主循环 + 递归子节点）、
+`src/Ufbx.NET/Parse/ReadElement.cs:274-320`（`SetupScaleHelper`）、
+`src/Ufbx.NET/Parse/Evaluate.cs:941-972`（helper 的 scale 折进子节点 translation）、
+`src/Ufbx.NET/Parse/Bake.cs:757-777 / 825-845 / 903-940`（`scale_helper_t` / `_s`）——
 逐行对照 C（ufbx.c:12556-12602 / 18478-18539 / 22969-22979 / 27280-27352 / 27421-27458）
 **无差异**。本批是补证明，不是重写。
 

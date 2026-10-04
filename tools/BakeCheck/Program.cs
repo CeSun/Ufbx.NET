@@ -2,7 +2,7 @@
 //
 // Replays the record stream of tools/bake_oracle.c (built with zig, `#include "ufbx.c"`, so it
 // runs the original `ufbxi_bake_*` chain and the `ufbx_bake_anim()` / `ufbx_find_baked_*` /
-// `ufbx_evaluate_baked_*` ABI) through src/Ufbx/Parse/Bake.cs + src/Ufbx/Api/UfbxBakeApi.cs.
+// `ufbx_evaluate_baked_*` ABI) through src/Ufbx.NET/Parse/Bake.cs + src/Ufbx.NET/Api/UfbxBakeApi.cs.
 // For every oracle line the port renders the *same grammar* from its own values and the two lines
 // are compared as text, so a mismatch is reported as "oracle line / port line" and the first
 // differing token is the diverging field. Each (file, variant) is baked lazily the first time a
@@ -50,7 +50,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace BakeCheck
 {

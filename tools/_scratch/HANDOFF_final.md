@@ -7,7 +7,7 @@
 ## 0. 总纲（不可改）
 
 - 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}`
-  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx`。
+  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx.NET`。
 - **公开 ABI 账本：114/114**（批 M 达成，之后每一波都没变）。⇒ 门面已封顶。
 - **只读** `C:/Workspace/_analyze_ufbx`（共享参考树），任何插桩都在私有副本做
   （`tools/_scratch/ufbx_nofix.c` 是批 Q 用过的一个例子）。

@@ -1,7 +1,9 @@
-# ufbx-cs
+# ufbx.net
 
 **ufbx v0.23.1 的纯 C# 移植** —— 无原生依赖、无 P/Invoke、无第三方包，
 目标框架 `netstandard2.1`（内部仅在指针对齐读取处使用 `unsafe`）。
+
+项目名、程序集名与根命名空间统一为 **`Ufbx.NET`**，解决方案为 `ufbx.net.sln`。
 
 ---
 
@@ -16,7 +18,7 @@
 | 参考树位置 | `C:/Workspace/_analyze_ufbx` —— **只读，且不在本仓库内**（体积与许可的原因不予 vendoring） |
 | 上游许可 | MIT / Public Domain (Unlicense) 二选一 |
 | 本仓库许可 | 与上游完全相同，见 [`LICENSE`](LICENSE) |
-| 移植产物规模 | `src/Ufbx` 88 个 `.cs`、约 47 100 行 |
+| 移植产物规模 | `src/Ufbx.NET` 88 个 `.cs`、约 47 100 行 |
 
 移植不是"照 API 重写一遍"，而是**逐条语义对齐**：C 的 `ufbxi_check` / `ufbxi_fail_msg` 错误口径、
 `arena` 分配失败路径、`union` 基类指针技巧、`f` 后缀向 `ufbx_real` 的拓宽、`zlib/inflate` 错误码、
@@ -52,7 +54,7 @@ numeric 280169 · s4c 332068 · mathvec 72000 · s3scene 13546 · util 7003
 ## 3. 目录结构
 
 ```
-src/Ufbx/                 ← 移植本体（唯一需要关心的产物）
+src/Ufbx.NET/                ← 移植本体（唯一需要关心的产物）
     Api/                  ← 公开入口：Load*/Evaluate*/Bake*/ ThreadPool / Error / Inflate
     Math/                 ← UfbxMath，移植自 upstream `extra/ufbx_math.c`
     Model/                ← ufbx.h 的数据模型，按元素类别拆分
@@ -62,9 +64,9 @@ src/Ufbx/                 ← 移植本体（唯一需要关心的产物）
     Properties/           ← P 属性表
     Util/                 ← ErrorFormat 等
     Enums.cs Types.cs ...
-    Ufbx.csproj           ← TargetFramework netstandard2.1, LangVersion 9.0, AllowUnsafeBlocks
+    Ufbx.NET.csproj          ← TargetFramework netstandard2.1, LangVersion 9.0, AllowUnsafeBlocks
 
-tests/Ufbx.Tests/         ← golden 对比（HashScene.cs）+ 自查 CLI（Program.cs）
+tests/Ufbx.NET.Tests/        ← golden 对比（HashScene.cs）+ 自查 CLI（Program.cs）
 
 tools/                    ← 差分验证工装（不是交付物的一部分，见 §5）
     <X>Oracle.c           ← C 侧期望值生成器：#include "ufbx.c" + test/hash_scene.h
@@ -87,13 +89,13 @@ HANDOFF_S3bc.md           ← 早期一波的详细交接
 ## 4. 构建与使用
 
 ```bash
-dotnet build ufbx-cs.sln -c Release
+dotnet build ufbx.net.sln -c Release
 ```
 
-作为库引用 `src/Ufbx/Ufbx.csproj` 即可，命名空间统一为 `Ufbx`：
+作为库引用 `src/Ufbx.NET/Ufbx.NET.csproj` 即可，命名空间为 `Ufbx.NET`（程序集同名）：
 
 ```csharp
-using Ufbx;
+using Ufbx.NET;
 
 var error = new UfbxError();
 var opts  = new UfbxLoadOpts();
@@ -120,10 +122,10 @@ Console.WriteLine($"nodes={scene.Nodes.Length} meshes={scene.Meshes.Length} root
 ### 第 1 层：golden 哈希（端到端）
 
 `upstream test/hash_scene.c` 会对整个场景做 FNV-1a-64 哈希。用参考树编译出 `test/hash_scene.exe`，
-跑遍 `data/` 下的 2179 个文件得到 `tools/golden_hashes.txt`；C# 侧用 `tests/Ufbx.Tests` 复算同一个哈希：
+跑遍 `data/` 下的 2179 个文件得到 `tools/golden_hashes.txt`；C# 侧用 `tests/Ufbx.NET.Tests` 复算同一个哈希：
 
 ```bash
-dotnet run --project tests/Ufbx.Tests -c Release -- goldens tools/golden_hashes.txt
+dotnet run --project tests/Ufbx.NET.Tests -c Release -- goldens tools/golden_hashes.txt
 # => goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors
 ```
 

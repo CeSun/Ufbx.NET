@@ -17,7 +17,7 @@
 ## 0. 总纲（不可改）
 
 - 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}`
-  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx`。
+  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx.NET`。
   ⚠️ **公开 ABI 账本已在批 M 达到 114/114**，批 N / 批 O 都没变。⇒ **后续每一波都是覆盖深度**，
   不是门面。当前对外完成度口径见 `COORDINATION.md` 批 N 节与工作区记忆：门面 100%、
   C 函数体映射 ~97%、端到端保真 100%，综合约 95%。
@@ -37,7 +37,7 @@
   ```
 
   触及 sin/cos/atan2/pow 追加 `-DUFBX_EXTERNAL_MATH` + `C:/Workspace/_analyze_ufbx/extra/ufbx_math.c`。
-- C# 构建：`dotnet build ufbx-cs.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`（约 5 分钟）。
+- C# 构建：`dotnet build ufbx.net.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`（约 5 分钟）。
 - ⚠️ **`perl` 已不在 PATH 上**，批 J/K 的 `tools/_mut_bake.sh` / `tools/_mut_createanim.sh` 会静默失败。
   变异脚本照抄 **`tools/_mut_pivot.sh`**（python **字节级**替换 + `cmp` 还原）。锚点**必须单行**且
   **不能是另一处的子串**；锚点备份 `tools/_scratch/<basename>.bak`。
@@ -64,7 +64,7 @@
 
 - `tools/PivotCheck`：**records 4342 / input 408 / mismatches 0 — ALL MATCH**（24 变体 × 17 文件）。
 - 变异 40 例：32 咬 / 8 不咬（6 例按设计不咬 + 2 例语料缺口，已用扩展探针量化）/ 0 ERROR / 0 RESTORE FAILED。
-- **一行端口代码都没改**：本体（`src/Ufbx/Parse/SceneBuild.cs:464-583`）早已移植完毕且逐行核对无差异。
+- **一行端口代码都没改**：本体（`src/Ufbx.NET/Parse/SceneBuild.cs:464-583`）早已移植完毕且逐行核对无差异。
 - 语料是**按证据挑的**：`tools/_scratch/_pivot_probe.{c,exe,txt}` 跑遍 `data/*.fbx`，报出每个文件的
   pivot 构成；690 个文件里只有 37 个带非零 pivot。
 - **最重要的方法论教训（写进规则 16）**：`test/hash_scene.h` **没有** `adjust_pre_translation`，

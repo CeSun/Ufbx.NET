@@ -1,5 +1,5 @@
 // C reference oracle for the ported numeric text->double layer
-// (src/Ufbx/Parse/Numeric.cs): ufbxi_parse_double, ufbxi_parse_inf_nan and the
+// (src/Ufbx.NET/Parse/Numeric.cs): ufbxi_parse_double, ufbxi_parse_inf_nan and the
 // ufbxi_bigint_* multi-precision helpers. ufbx.c is a single translation unit, so
 // including it makes every `static ufbxi_*` internal directly callable.
 //

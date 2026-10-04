@@ -16,9 +16,9 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
-namespace UfbxTests
+namespace Ufbx.NET.Tests
 {
     internal static class InflateCheck
     {

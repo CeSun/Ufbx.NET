@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Isolated verification for batch J (the animation-baking chain). Not part of ufbx-cs.sln.
+  <!-- Isolated verification for batch J (the animation-baking chain). Not part of ufbx.net.sln.
        Replays the record stream of tools/bake_oracle.c (built with zig, #include "ufbx.c") through
-       src/Ufbx/Parse/Bake.cs + src/Ufbx/Api/UfbxBakeApi.cs and compares every record of the
+       src/Ufbx.NET/Parse/Bake.cs + src/Ufbx.NET/Api/UfbxBakeApi.cs and compares every record of the
        grammar documented in the oracle header. Also serves as the mutation-test rig. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -18,7 +18,7 @@
     <NoWarn>CS0168;CS0219;CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

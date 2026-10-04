@@ -11,8 +11,8 @@
 // trim_start_time, skip_node_transforms, bake_transform_props, no_resample_rotation,
 // ignore_layer_weight_animation, max_keyframe_segments, key reduction (enabled/rotation/
 // threshold/passes incl. the negative-threshold disable) and evaluate_flags=NO_EXTRAPOLATION.
-// The C# harness (tools/BakeCheck) replays every record through src/Ufbx/Parse/Bake.cs and
-// src/Ufbx/Api/UfbxBakeApi.cs and compares value by value.
+// The C# harness (tools/BakeCheck) replays every record through src/Ufbx.NET/Parse/Bake.cs and
+// src/Ufbx.NET/Api/UfbxBakeApi.cs and compares value by value.
 //
 // Output grammar (space separated, one record per line; `<h>` = lowercase 16 hex digits of the
 // IEEE-754 bits of a double, `<z>` = 16 hex digits of an FNV-1a-64, `<i>`/`<u>` = decimal):

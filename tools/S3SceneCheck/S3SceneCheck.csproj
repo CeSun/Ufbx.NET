@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for the S3a scene-build helpers (Parse/SceneBuild.cs). Not part of
-       ufbx-cs.sln. Drives the ported comparators / binary-search helpers / stable sorts directly
+       ufbx.net.sln. Drives the ported comparators / binary-search helpers / stable sorts directly
        over the input/answer corpus of tools/s3_oracle.c (built with zig, #include "ufbx.c").
        Also serves as the mutation-test rig (see the S3a report). -->
   <PropertyGroup>
@@ -17,7 +17,7 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

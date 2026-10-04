@@ -1,33 +1,33 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verifier for the ported inflate/bit-stream/Huffman layer: compiles only the
        files that section needs, so it can run even while other in-flight modules break the
-       main build (same trick as tools/MathVectorCheck). Not part of ufbx-cs.sln on purpose. -->
+       main build (same trick as tools/MathVectorCheck). Not part of ufbx.net.sln on purpose. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <RootNamespace>UfbxTests</RootNamespace>
+    <RootNamespace>Ufbx.NET.Tests</RootNamespace>
     <RollForward>LatestMajor</RollForward>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <NoWarn>CS0168;CS0219;CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\Math\UfbxBitUtil.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxMath.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxFma.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\Types.cs" />
-    <Compile Include="..\..\src\Ufbx\Enums.cs" />
-    <Compile Include="..\..\src\Ufbx\Model\GeometryValueTypes.cs" />
-    <Compile Include="..\..\src\Ufbx\Model\Opts\RuntimeOpts.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\Error.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\BitStream.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\Huff.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\Inflate.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxBitUtil.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxMath.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxFma.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\Types.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Enums.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Model\GeometryValueTypes.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Model\Opts\RuntimeOpts.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\Error.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\BitStream.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\Huff.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\Inflate.cs" />
     <!-- The public façade is compiled in so `RunPort()` below goes through it (the isolated
          project has no assembly reference, just a source list). -->
-    <Compile Include="..\..\src\Ufbx\Api\UfbxInflateApi.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Api\UfbxInflateApi.cs" />
     <Compile Include="Corpus.cs" />
     <Compile Include="InflateCheck.cs" />
     <Compile Include="Program.cs" />

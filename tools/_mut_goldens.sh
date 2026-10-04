@@ -19,7 +19,7 @@ perl -e '
   open my $oh,">",$p or die "open-out: $!"; binmode $oh; print $oh $s; close $oh;
 ' "$file" "$old" "$new" || { echo "$tag | APPLY FAILED"; exit 1; }
 
-out=$(cd "$POS" && dotnet run --project tests/Ufbx.Tests -c Release -- goldens tools/golden_hashes.txt 2>&1)
+out=$(cd "$POS" && dotnet run --project tests/Ufbx.NET.Tests -c Release -- goldens tools/golden_hashes.txt 2>&1)
 code=$?
 summary=$(printf '%s\n' "$out" | grep -m1 "goldens:")
 first=$(printf '%s\n' "$out" | grep -m1 -B1 -A1 "MISMATCH\|mismatched file" | tr '\n' '~' | cut -c1-200)

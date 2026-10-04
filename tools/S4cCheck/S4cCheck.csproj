@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for the S4c topology / normals / triangulation module
-       (Parse/Topology.cs). Not part of ufbx-cs.sln. The C# port cannot load FBX files yet
+       (Parse/Topology.cs). Not part of ufbx.net.sln. The C# port cannot load FBX files yet
        (toplevel reader seam unported), so tools/s4c_oracle.c (zig, #include "ufbx.c") dumps
        both the loaded mesh definition (VP/VPI/F/VTX/VFI/ED/ES/FS/VNV/VNI records, bit-exact)
        and the S4c outputs (TOP/MAP/NRM/TRI/WFN) for every mesh of the corpus. This harness
@@ -21,7 +21,7 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

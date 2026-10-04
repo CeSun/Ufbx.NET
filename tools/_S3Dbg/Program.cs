@@ -12,7 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Ufbx;
+using Ufbx.NET;
 using S3DbgTrace;
 
 class Dbg

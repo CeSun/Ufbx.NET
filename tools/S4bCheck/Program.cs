@@ -2,7 +2,7 @@
 //
 // Replays the record stream of tools/s4b_oracle.c (built with zig, `#include "ufbx.c"`, so it
 // runs the original `ufbx_evaluate_*` / `ufbxi_*` evaluation code) through the ported evaluators
-// in src/Ufbx/Parse/Evaluate.cs and compares the two record streams line by line. Every line is
+// in src/Ufbx.NET/Parse/Evaluate.cs and compares the two record streams line by line. Every line is
 // produced by both sides with the same grammar (see the oracle header), so the first divergence
 // is a real behavioural difference, not a formatting one.
 //
@@ -40,7 +40,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using Ufbx;
+using Ufbx.NET;
 
 namespace S4bCheck
 {

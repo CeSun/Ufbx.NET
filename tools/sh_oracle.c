@@ -20,7 +20,7 @@
 //   the connection remap                           (ufbx.c:18720-18745)
 //   ufbxi_evaluate_transform (helper scale path)   (ufbx.c:22969-22979)
 //   ufbxi_bake_node (scale_helper_t / _s)          (ufbx.c:27280-27352, 27421-27458)
-// The C# twin is src/Ufbx/Parse/SceneBuild.cs:605-668 + src/Ufbx/Parse/Bake.cs:757-777/825-845,
+// The C# twin is src/Ufbx.NET/Parse/SceneBuild.cs:605-668 + src/Ufbx.NET/Parse/Bake.cs:757-777/825-845,
 // replayed by tools/ShCheck.
 //
 // Compile (the only recognised configuration, see HANDOFF_batch_P.md section 0):

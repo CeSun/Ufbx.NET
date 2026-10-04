@@ -1,22 +1,22 @@
-M_dedup_xor	src/Ufbx/Parse/Bake.cs	if (((next.Flags ^ prev.Flags) & 0x3u) == 0) {	if (((next.Flags ^ prev.Flags) & 0x3u) == 1) {
-M_stepkey_next	src/Ufbx/Parse/Bake.cs	next.Flags |= KeyStepKey;	if (false) next.Flags |= KeyStepKey;
-M_stepkey_prev	src/Ufbx/Parse/Bake.cs	prev.Flags |= KeyStepKey;	if (false) prev.Flags |= KeyStepKey;
-M_leftgate	src/Ufbx/Parse/Bake.cs	} else if ((prev.Flags & KeyStepLeft) != 0) {	} else if ((prev.Flags & KeyStepLeft) == 0) {
-M_keepflags	src/Ufbx/Parse/Bake.cs	uint keepFlags = KeyStepLeft | KeyStepRight | KeyStepKey | KeyKeyframe;	uint keepFlags = KeyStepLeft | KeyStepRight | KeyKeyframe;
-M_mindist	src/Ufbx/Parse/Bake.cs	double minDist = 0.25 / bc.Opts.ResampleRate;	double minDist = 0.5 / bc.Opts.ResampleRate;
-M_maxeps	src/Ufbx/Parse/Bake.cs	double epsilon = 0.0078125 / bc.Opts.MaximumSampleRate;	double epsilon = 0.0 / bc.Opts.MaximumSampleRate;
-M_addeps	src/Ufbx/Parse/Bake.cs	return a > 0 ? a * epsilon : a / epsilon;	return a > 0 ? a / epsilon : a * epsilon;
-M_subeps	src/Ufbx/Parse/Bake.cs	return a > 0 ? a / epsilon : a * epsilon;	return a > 0 ? a * epsilon : a / epsilon;
-M_stepdur	src/Ufbx/Parse/Bake.cs	double step = 0.001;	double step = 0.002;
-M_epsbase	src/Ufbx/Parse/Bake.cs	double epsilon = 1.0 + FltEpsilon * 4.0f;	double epsilon = 1.0;
-M_adjacent	src/Ufbx/Parse/Bake.cs	pTime = time = UfbxMath.NextAfter(time, double.PositiveInfinity);	pTime = time = UfbxMath.NextAfter(time, double.NegativeInfinity);
-M_mintime	src/Ufbx/Parse/Bake.cs	double minTime = UfbxMath.FMax(prevTime + step, AddEpsilon(prevTime, epsilon));	double minTime = prevTime;
-M_maxtime	src/Ufbx/Parse/Bake.cs	double maxTime = UfbxMath.FMin(nextTime - step, SubEpsilon(nextTime, epsilon));	double maxTime = nextTime;
-M_leftret	src/Ufbx/Parse/Bake.cs	return time > minTime;	return true;
-M_rightret	src/Ufbx/Parse/Bake.cs	return time < maxTime;	return true;
-M_antipodal	src/Ufbx/Parse/Bake.cs	cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);	if (false) cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);
-M_qprevshift	src/Ufbx/Parse/Bake.cs	if (prevIx > 0 && keys[prevIx - 1].Time == time) prevIx--;	if (false && prevIx > 0 && keys[prevIx - 1].Time == time) prevIx--;
-M_vec3const	src/Ufbx/Parse/Bake.cs	if (v.X != refValue.X || v.Y != refValue.Y || v.Z != refValue.Z) {	if (v.X != refValue.X) {
-E_scaleeps	src/Ufbx/Parse/SceneBuild.cs	const double scaleEpsilon = (double)0.001f;	const double scaleEpsilon = 0.001;
-E_compseps	src/Ufbx/Parse/SceneBuild.cs	const double compensateEpsilon = (double)0.01f;	const double compensateEpsilon = 0.01;
-E_pivoteps	src/Ufbx/Parse/SceneBuild.cs	const double pivotEpsilon = (double)0.001f;	const double pivotEpsilon = 0.001;
+M_dedup_xor	src/Ufbx.NET/Parse/Bake.cs	if (((next.Flags ^ prev.Flags) & 0x3u) == 0) {	if (((next.Flags ^ prev.Flags) & 0x3u) == 1) {
+M_stepkey_next	src/Ufbx.NET/Parse/Bake.cs	next.Flags |= KeyStepKey;	if (false) next.Flags |= KeyStepKey;
+M_stepkey_prev	src/Ufbx.NET/Parse/Bake.cs	prev.Flags |= KeyStepKey;	if (false) prev.Flags |= KeyStepKey;
+M_leftgate	src/Ufbx.NET/Parse/Bake.cs	} else if ((prev.Flags & KeyStepLeft) != 0) {	} else if ((prev.Flags & KeyStepLeft) == 0) {
+M_keepflags	src/Ufbx.NET/Parse/Bake.cs	uint keepFlags = KeyStepLeft | KeyStepRight | KeyStepKey | KeyKeyframe;	uint keepFlags = KeyStepLeft | KeyStepRight | KeyKeyframe;
+M_mindist	src/Ufbx.NET/Parse/Bake.cs	double minDist = 0.25 / bc.Opts.ResampleRate;	double minDist = 0.5 / bc.Opts.ResampleRate;
+M_maxeps	src/Ufbx.NET/Parse/Bake.cs	double epsilon = 0.0078125 / bc.Opts.MaximumSampleRate;	double epsilon = 0.0 / bc.Opts.MaximumSampleRate;
+M_addeps	src/Ufbx.NET/Parse/Bake.cs	return a > 0 ? a * epsilon : a / epsilon;	return a > 0 ? a / epsilon : a * epsilon;
+M_subeps	src/Ufbx.NET/Parse/Bake.cs	return a > 0 ? a / epsilon : a * epsilon;	return a > 0 ? a * epsilon : a / epsilon;
+M_stepdur	src/Ufbx.NET/Parse/Bake.cs	double step = 0.001;	double step = 0.002;
+M_epsbase	src/Ufbx.NET/Parse/Bake.cs	double epsilon = 1.0 + FltEpsilon * 4.0f;	double epsilon = 1.0;
+M_adjacent	src/Ufbx.NET/Parse/Bake.cs	pTime = time = UfbxMath.NextAfter(time, double.PositiveInfinity);	pTime = time = UfbxMath.NextAfter(time, double.NegativeInfinity);
+M_mintime	src/Ufbx.NET/Parse/Bake.cs	double minTime = UfbxMath.FMax(prevTime + step, AddEpsilon(prevTime, epsilon));	double minTime = prevTime;
+M_maxtime	src/Ufbx.NET/Parse/Bake.cs	double maxTime = UfbxMath.FMin(nextTime - step, SubEpsilon(nextTime, epsilon));	double maxTime = nextTime;
+M_leftret	src/Ufbx.NET/Parse/Bake.cs	return time > minTime;	return true;
+M_rightret	src/Ufbx.NET/Parse/Bake.cs	return time < maxTime;	return true;
+M_antipodal	src/Ufbx.NET/Parse/Bake.cs	cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);	if (false) cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);
+M_qprevshift	src/Ufbx.NET/Parse/Bake.cs	if (prevIx > 0 && keys[prevIx - 1].Time == time) prevIx--;	if (false && prevIx > 0 && keys[prevIx - 1].Time == time) prevIx--;
+M_vec3const	src/Ufbx.NET/Parse/Bake.cs	if (v.X != refValue.X || v.Y != refValue.Y || v.Z != refValue.Z) {	if (v.X != refValue.X) {
+E_scaleeps	src/Ufbx.NET/Parse/SceneBuild.cs	const double scaleEpsilon = (double)0.001f;	const double scaleEpsilon = 0.001;
+E_compseps	src/Ufbx.NET/Parse/SceneBuild.cs	const double compensateEpsilon = (double)0.01f;	const double compensateEpsilon = 0.01;
+E_pivoteps	src/Ufbx.NET/Parse/SceneBuild.cs	const double pivotEpsilon = (double)0.001f;	const double pivotEpsilon = 0.001;

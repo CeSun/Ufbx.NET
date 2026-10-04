@@ -371,7 +371,7 @@ zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off \
 
 1. `ufbx.c:238-277`：`UFBX_EXTERNAL_MATH` **未**定义时，`UFBX_MATH_PREFIX` 被定义成**空**宏，于是 `ufbx_atan2 → ufbxi_pre_cat(, atan2) → atan2`，即宿主 CRT。zig cc 默认 target 是 `x86_64-windows-gnu`，链接 `api-ms-win-crt-math`（UCRT/Intel IML），**不是** fdlibm/LIBM。
 2. 权威参考生成器本来就走软件数学核：`test/hash_scene.c:284` 自己写了 `#define UFBX_EXTERNAL_MATH`，`misc/run_tests.py:1541` 的源文件列表是 `["test/hash_scene.c", "extra/ufbx_math.c"]`。实测：现 `test/hash_scene.exe` 与新构建的 sw 版在带动画层语料上 frame 0/1/4/9 哈希**逐位相同** → `golden_hashes.txt` 是 ufbx_math 语义。`tools/mathvec.c` 同样定义了该宏（不带 ufbx_math.c 会 `undefined symbol: ufbx_pow` 链接失败）→ `math_vectors.txt` 72000 条也是 ufbx_math 语义。
-3. `src/Ufbx/Math/UfbxMath.cs` 是 `extra/ufbx_math.c` 的逐行移植，因此**端口一侧本来就对齐 goldens**。此前 S4b-1 的 243 条分歧（P/Q/R，文件 3/5/6/7/17/18）是 oracle 一侧误绑 CRT 的 `atan2` 造成的假阳性，不是移植缺陷：`ufbx_quat_to_euler`（ufbx.c:31630+，仅由 `ufbxi_combine_anim_layer` 的 additive/blended `compose_rotation` 路径调用）里的 `atan2(az, ax)` 即分歧点，`atan2(3f3a819a7af95c38, 3fefffffd416aeec)`：CRT `…afb` vs ufbx_math/端口 `…afc`。
+3. `src/Ufbx.NET/Math/UfbxMath.cs` 是 `extra/ufbx_math.c` 的逐行移植，因此**端口一侧本来就对齐 goldens**。此前 S4b-1 的 243 条分歧（P/Q/R，文件 3/5/6/7/17/18）是 oracle 一侧误绑 CRT 的 `atan2` 造成的假阳性，不是移植缺陷：`ufbx_quat_to_euler`（ufbx.c:31630+，仅由 `ufbxi_combine_anim_layer` 的 additive/blended `compose_rotation` 路径调用）里的 `atan2(az, ax)` 即分歧点，`atan2(3f3a819a7af95c38, 3fefffffd416aeec)`：CRT `…afb` vs ufbx_math/端口 `…afc`。
 4. 两实现的系统性偏差实测（各 40000 条、mathvec 同款分布，`tools/_s4b_mathref.c`）：`atan2` 12.1%、`pow` 4.1%、`cos` 0.27%、`sin` 0.26%、`atan` 0.03%、`asin`/`floor`/`ceil` 仅 NaN-payload 边角；`sqrt/fabs/rint/tan/copysign/fmin/fmax/nextafter` 为 0。**所以只有触及 atan2/pow/sin/cos 的 oracle 有真风险**，其余历史产物（dom/graph/load/util/numeric/ascii/inflate/s3*/s4a/s4c 至今 0 分歧）说明那些路径在语料里根本没被触发。
 5. 复现口径：`tools/s4b_oracle.exe/.txt` 已按本节命令重建，`S4bCheck` 现为 **12091 行 / 0 分歧（ALL MATCH）**（S4b-2 起含 `V`＝评估态 golden 哈希、`W`＝评估扫完后的源场景哈希；公开门面波起含 `X`＝语料顶点访问器 + panic 探针、`Y`＝合成属性的 NO_INDEX/越界分支、`F`＝find_*/get_* 场景查找组九段，第 9 段＝`ufbx_find_face_index`）。以后看到"1 ULP、只出现在 sin/cos/atan2/pow、且只在带动画层/缓动的文件上出现"的分歧，先查 oracle 的数学绑定，再查端口。
    - 顶点访问器不碰任何数学，所以 X/Y 在没有 `-DUFBX_EXTERNAL_MATH` 的构建里也不会漂；重建后**必须**用"既有记录逐字节相同"来确认（本轮就是这么验的：去掉 X/Y 后 11761 条与重建前完全一致；扩 `F` 的那两次重建同样逐字节验收到只剩该变的段为止——最后一次只允许 30 条 `F <fi> 8` 变化）。
@@ -381,15 +381,15 @@ zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off \
 
 ## 文件布局
 
-- `src/Ufbx/Math/UfbxMath.cs` ← extra/ufbx_math.c
-- `src/Ufbx/Math/Types.cs` ← ufbx.h 数学类型与内联操作
-- `src/Ufbx/Enums.cs`、`Types.cs`、`Props.cs`、`Error.cs` ← ufbx.h
-- `src/Ufbx/Model/**` ← ufbx.h 数据模型（**唯一被编译的模型层**，按元素类别分文件）。曾有一份单体 `Types.cs` 与其重复定义 274 个类型，已移到 `src/Ufbx/_quarantine/Types.duplicate.cs.txt`（不编译）。不要再往 csproj 里加 `<Compile Remove="Model\**\*.cs" />`；缺的类型按解析层实际需要补进 `Model/`。
-- `src/Ufbx/Parse/*` ← ufbx.c 解析层
-- `src/Ufbx/Scene/*` ← 场景/连接/元素构建
-- `src/Ufbx/Utils/*` ← generate_indices、triangulate、topology、normals、skin、subdiv
-- `src/Ufbx/Anim/*`、`Nurbs/*`、`Cache/*`、`Obj/*`
-- `src/Ufbx/Api/*` ← **公开门面层**（2026-10-04 起）：一个 C 前缀一个 `public static class`，只做转发，不带函数体。
+- `src/Ufbx.NET/Math/UfbxMath.cs` ← extra/ufbx_math.c
+- `src/Ufbx.NET/Math/Types.cs` ← ufbx.h 数学类型与内联操作
+- `src/Ufbx.NET/Enums.cs`、`Types.cs`、`Props.cs`、`Error.cs` ← ufbx.h
+- `src/Ufbx.NET/Model/**` ← ufbx.h 数据模型（**唯一被编译的模型层**，按元素类别分文件）。曾有一份单体 `Types.cs` 与其重复定义 274 个类型，已移到 `src/Ufbx.NET/_quarantine/Types.duplicate.cs.txt`（不编译）。不要再往 csproj 里加 `<Compile Remove="Model\**\*.cs" />`；缺的类型按解析层实际需要补进 `Model/`。
+- `src/Ufbx.NET/Parse/*` ← ufbx.c 解析层
+- `src/Ufbx.NET/Scene/*` ← 场景/连接/元素构建
+- `src/Ufbx.NET/Utils/*` ← generate_indices、triangulate、topology、normals、skin、subdiv
+- `src/Ufbx.NET/Anim/*`、`Nurbs/*`、`Cache/*`、`Obj/*`
+- `src/Ufbx.NET/Api/*` ← **公开门面层**（2026-10-04 起）：一个 C 前缀一个 `public static class`，只做转发，不带函数体。
   `UfbxApi`（load/evaluate 入口 + 引用计数空操作）、`UfbxEvaluate`（`ufbx_evaluate_*`）、`UfbxDom`、
   `UfbxAs`（`ufbx_as_*` 降型）、`UfbxTopologyApi`（拓扑/法线/顶点访问器）、`UfbxGeometryApi`（细分/NURBS/generate_indices）、
   `UfbxInflateApi`（`ufbx_inflate`）、`UfbxGeometryCacheApi`（geometry cache 的 load/read/sample 六件）、
@@ -398,10 +398,10 @@ zig cc -O2 -DNDEBUG -std=c11 -mcpu=x86_64 -ffp-contract=off \
   函数体一般仍留在 `Parse/**`/`Util/**` 的 internal 类里 ⇒ 既有差分（S4b/S4c/S3bc/S4a/InflateCheck）继续覆盖同一份实现。
   **harness 也要走门面**，否则转发层本身是暗区：`tools/InflateCheck/InflateCheck.cs`、`tools/S4aCheck/Program.cs`
   与 `tools/UtilCheck/Program.cs` 都是把调用点改成 `Ufbx*Api.*` 而不是 internal 方法。
-- `src/Ufbx/UfbxApi.cs` ← 公开入口
+- `src/Ufbx.NET/UfbxApi.cs` ← 公开入口
 - 隔离验证工程（`tools/InflateCheck`、`tools/MathVectorCheck` 这类 `EnableDefaultCompileItems=false` 的）
   **必须手工把新增的 `Api/*.cs` 列进 `<Compile Include>`**，它们不会自动纳入；`tools/S4aCheck`、`tools/S4bCheck`、
-  `tools/S4cCheck` 用 `..\..\src\Ufbx\**\*.cs` 通配，自动纳入。
+  `tools/S4cCheck` 用 `..\..\src\Ufbx.NET\**\*.cs` 通配，自动纳入。
 
 ## 解析层地基（已落地，后续模块按此对接）
 
@@ -462,9 +462,9 @@ C 里有若干「按裸指针比较」的地方会**决定场景内容顺序**�
 
 - **语料位置**：golden 里的相对路径 `data/...` 实际在 `C:\Workspace\_analyze_ufbx\data`（918 个条目）；`tools/golden_hashes.txt` 共 2179 行 = 1974 `.fbx` + 195 `.obj` + 10 `.mtl`，**去重后 905 个文件**（同一文件可有多个 frame 用例）。验收口径是这 2179 个 (文件, frame) 用例，不是「1782 个文件」。对拍器需要可配置 data root，默认指向上面这个目录。
 - golden: `tools/golden_hashes.txt`（C 生成，格式 `<hash16> <frame> <path>`）
-- C# 对拍工具：`tests/Ufbx.Tests`（console，可 `--file x.fbx --frame N` 打印 hash，或全量跑 golden 比对）
+- C# 对拍工具：`tests/Ufbx.NET.Tests`（console，可 `--file x.fbx --frame N` 打印 hash，或全量跑 golden 比对）
 - hash 算法必须忠实移植 `test/hash_scene.h/c`（UfbxHashScene）
-- `dotnet run --project tests/Ufbx.Tests -c Release -- mathvec tools/math_vectors.txt`：数学库 72000 条向量逐位对拍（当前 72000/72000）。
-- `dotnet run --project tests/Ufbx.Tests -c Release -- streamcheck`：`UfbxiStream` 状态机不变量/字节序列对拍（内存输入、流输入、prefix、skip 两条路径、read_to、Empty/Truncated/IO 错误文案、progress 窗口切分）。
+- `dotnet run --project tests/Ufbx.NET.Tests -c Release -- mathvec tools/math_vectors.txt`：数学库 72000 条向量逐位对拍（当前 72000/72000）。
+- `dotnet run --project tests/Ufbx.NET.Tests -c Release -- streamcheck`：`UfbxiStream` 状态机不变量/字节序列对拍（内存输入、流输入、prefix、skip 两条路径、read_to、Empty/Truncated/IO 错误文案、progress 窗口切分）。
 - 主构建可能被其他在途模块打断时，用隔离工程验证自己的代码（模板：`tools/MathVectorCheck`、`tools/InflateCheck`，`EnableDefaultCompileItems=false` + 显式 `<Compile Include>`）。
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verifier for the S2 animation tangent solvers: replays the records of
        tools/animcurve_oracle.c (output tools/animcurve_oracle.txt) against the ported
-       UfbxiAnimReader solvers and compares IEEE-754 bit patterns. Not part of ufbx-cs.sln
+       UfbxiAnimReader solvers and compares IEEE-754 bit patterns. Not part of ufbx.net.sln
        (template: tools/MathVectorCheck / tools/DomCheck). The oracle is built with
        -mcpu=x86_64 and -ffp-contract=off (see PORTING_NOTES.md).
        Usage: dotnet run (project tools/AnimCurveCheck) with the oracle path -->
@@ -19,7 +19,7 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for the S4a geometry-cache / external-file / axes-unit / skinning
-       module. Not part of ufbx-cs.sln. Drives the ported cache loader + skinning helpers directly
+       module. Not part of ufbx.net.sln. Drives the ported cache loader + skinning helpers directly
        over the input/answer corpus of tools/s4a_oracle.c (built with zig, #include "ufbx.c").
        Also serves as the mutation-test rig (see the S4a report). -->
   <PropertyGroup>
@@ -17,7 +17,7 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

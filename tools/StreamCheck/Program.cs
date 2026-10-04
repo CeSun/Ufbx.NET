@@ -3,7 +3,7 @@
 // Replays the record stream of tools/stream_oracle.c (built with zig, `#include "ufbx.c"`, so it
 // runs the original `ufbxi_fopen()` / `ufbxi_stdio_*` / `ufbxi_memory_*` / `ufbx_open_*` /
 // `ufbx_load_stream*` / `ufbx_load_stdio*` / the deferred open of `ufbxi_load_imp()`) through
-// src/Ufbx/Parse/StreamOpen.cs + src/Ufbx/Parse/InputStreams.cs + src/Ufbx/Api/UfbxApi.cs.
+// src/Ufbx.NET/Parse/StreamOpen.cs + src/Ufbx.NET/Parse/InputStreams.cs + src/Ufbx.NET/Api/UfbxApi.cs.
 //
 // The oracle owns the whole variant table and re-emits the payload, the path, the prefix and every
 // option as `S`/`I`/`Ip`/`Id` records, so this harness has no mirror of `k_variants[]`,
@@ -44,7 +44,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace StreamCheck
 {

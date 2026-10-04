@@ -2,8 +2,8 @@
   <!-- Isolated verifier for the ported Util layer (Util Hash/Map/Utf8/StringPool/Warnings
        /ErrorFormat) plus the UfbxErrorApi facade it feeds.
        It compiles ONLY the files the string pool needs, so it builds even while Parse/Model
-       are mid-flight, and is deliberately not part of ufbx-cs.sln (as with tools/HashCheck).
-       New src/Ufbx files are listed by hand here (EnableDefaultCompileItems=false).
+       are mid-flight, and is deliberately not part of ufbx.net.sln (as with tools/HashCheck).
+       New src/Ufbx.NET files are listed by hand here (EnableDefaultCompileItems=false).
        Usage: dotnet run project tools/UtilCheck with the oracle path tools/util_oracle.txt -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,24 +16,24 @@
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\Enums.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\Types.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxBitUtil.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxFma.cs" />
-    <Compile Include="..\..\src\Ufbx\Math\UfbxMath.cs" />
-    <Compile Include="..\..\src\Ufbx\Api\UfbxErrorApi.cs" />
-    <Compile Include="..\..\src\Ufbx\Model\**\*.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\Error.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\UfbxiNode.cs" />
-    <Compile Include="..\..\src\Ufbx\Parse\UfbxiStrings.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\ErrorFormat.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\Hash.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\Map.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\Print.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\Sort.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\StringPool.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\Utf8.cs" />
-    <Compile Include="..\..\src\Ufbx\Util\Warnings.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Enums.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\Types.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxBitUtil.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxFma.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Math\UfbxMath.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Api\UfbxErrorApi.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Model\**\*.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\Error.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\UfbxiNode.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Parse\UfbxiStrings.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\ErrorFormat.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\Hash.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\Map.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\Print.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\Sort.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\StringPool.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\Utf8.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\Util\Warnings.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

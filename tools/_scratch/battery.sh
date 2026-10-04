@@ -23,9 +23,9 @@ dotnet_run() { # project args...
     dotnet run --project "$proj" -c Release -- "$@"
 }
 
-run build "$UFBX" dotnet build ufbx-cs.sln -c Release
-run goldens "$UFBX" dotnet_run "$WIN_UFBX/tests/Ufbx.Tests" goldens tools/golden_hashes.txt
-run streamcheck "$UFBX" dotnet_run "$WIN_UFBX/tests/Ufbx.Tests" streamcheck
+run build "$UFBX" dotnet build ufbx.net.sln -c Release
+run goldens "$UFBX" dotnet_run "$WIN_UFBX/tests/Ufbx.NET.Tests" goldens tools/golden_hashes.txt
+run streamcheck "$UFBX" dotnet_run "$WIN_UFBX/tests/Ufbx.NET.Tests" streamcheck
 run mathvec "$UFBX" dotnet_run "$WIN_UFBX/tools/MathVectorCheck" mathvec tools/math_vectors.txt
 run util "$UFBX" dotnet_run "$WIN_UFBX/tools/UtilCheck" "$WIN_UFBX/tools/util_oracle.txt"
 run s4a "$UFBX" dotnet_run "$WIN_UFBX/tools/S4aCheck" "$WIN_UFBX/tools/s4a_oracle.txt"

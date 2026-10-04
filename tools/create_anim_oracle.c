@@ -3,7 +3,7 @@
 // Built with `#include "ufbx.c"` so it runs the original `ufbxi_check_string()` (ufbx.c:26506-26518),
 // `ufbxi_push_anim_string()` (26520-26534), the three override comparators (26536-26558),
 // `ufbxi_create_anim_imp()` (26560-26676) and the public `ufbx_create_anim()` (31202-31226), plus
-// `ufbx_evaluate_scene()` on the anim it returns. The C# twin is src/Ufbx/Parse/CreateAnim.cs +
+// `ufbx_evaluate_scene()` on the anim it returns. The C# twin is src/Ufbx.NET/Parse/CreateAnim.cs +
 // UfbxApi.CreateAnim, replayed by tools/CreateAnimCheck.
 //
 // DESIGN: the variant table lives *only* here. Every `ufbx_anim_opts` this oracle hands to

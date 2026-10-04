@@ -1,4 +1,4 @@
-// Which ufbx.h `ufbx_abi` functions still have no public C# counterpart in src/Ufbx?
+// Which ufbx.h `ufbx_abi` functions still have no public C# counterpart in src/Ufbx.NET?
 // Naming rule of the port: C name minus the `ufbx_` prefix, snake_case -> PascalCase.
 const fs = require("fs");
 const path = require("path");
@@ -14,7 +14,7 @@ function walk(dir, out) {
   return out;
 }
 
-const files = walk("src/Ufbx", []);
+const files = walk("src/Ufbx.NET", []);
 const decls = new Map(); // pascal name -> [file, line]
 for (const f of files) {
   const lines = fs.readFileSync(f, "utf8").split(/\r?\n/);

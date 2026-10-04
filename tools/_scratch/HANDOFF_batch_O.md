@@ -20,7 +20,7 @@
 ## 0. 总纲（不可改）
 
 - 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}`
-  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx`。
+  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx.NET`。
   ⚠️ **公开 ABI 账本已在批 M 达到 114/114**，批 N 也没变。⇒ **本批是覆盖深度**，不是门面。
 - **只读** `C:/Workspace/_analyze_ufbx`（共享参考树），任何插桩都在私有副本 `tools/_scratch/ufbx_dbg/` 做。
 - 每一波交付物 = **C oracle + C# 差分 harness + 变异对照（mutation controls）**，变异结束必须用 `cmp`
@@ -36,7 +36,7 @@
   ```
 
   触及 sin/cos/atan2/pow 追加 `-DUFBX_EXTERNAL_MATH` + `C:/Workspace/_analyze_ufbx/extra/ufbx_math.c`。
-- C# 构建：`dotnet build ufbx-cs.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`（约 5 分钟）。
+- C# 构建：`dotnet build ufbx.net.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`（约 5 分钟）。
 - ⚠️ **`perl` 已不在 PATH 上**，批 J/K 的 `tools/_mut_bake.sh` / `tools/_mut_createanim.sh` 会静默失败。
   变异脚本照抄 **`tools/_mut_skin.sh`**（python **字节级**替换 + `cmp` 还原）。锚点**必须单行**且
   **不能是另一处的子串**；锚点备份 `tools/_scratch/<basename>.bak`。
@@ -86,10 +86,10 @@
 `pivot_handling` 是 `ufbx_load_opts` 的一个**三值枚举**（`UFBX_PIVOT_HANDLING_*`，`ufbx.h:4823`），
 加上配套的 `pivot_handling_retain_empties`（`ufbx.h:4826`）。端口**已经移植**：
 
-- `src/Ufbx/Enums.cs:949` `UfbxPivotHandling`（枚举值 3 个，`UfbxEnumCounts.UfbxPivotHandling = 3`）
-- `src/Ufbx/Model/Opts/LoadOpts.cs:77-78` 两个选项字段
-- `src/Ufbx/Parse/SceneBuild.cs:266-267 / 465-…` 分支本体（对应 C:18120 / 18329-18398）
-- `src/Ufbx/Parse/Load.cs:1169-1170` 拷贝；`src/Ufbx/Model/UfbxScene.cs:102` 与 C:23736 的
+- `src/Ufbx.NET/Enums.cs:949` `UfbxPivotHandling`（枚举值 3 个，`UfbxEnumCounts.UfbxPivotHandling = 3`）
+- `src/Ufbx.NET/Model/Opts/LoadOpts.cs:77-78` 两个选项字段
+- `src/Ufbx.NET/Parse/SceneBuild.cs:266-267 / 465-…` 分支本体（对应 C:18120 / 18329-18398）
+- `src/Ufbx.NET/Parse/Load.cs:1169-1170` 拷贝；`src/Ufbx.NET/Model/UfbxScene.cs:102` 与 C:23736 的
   `scene->metadata.pivot_handling = uc->opts.pivot_handling`
 
 但**没有任何差分覆盖它**：goldens 用 `{0}` 的 load opts（默认 `UFBX_PIVOT_HANDLING_NONE`），
@@ -155,5 +155,5 @@
 ## 5. 上手第一件事
 
 读 `COORDINATION.md` 最后一节（批 N）+ `PORTING_NOTES.md` 规则 15 与 #4 / 规则 12，
-读 `src/Ufbx/Parse/SceneBuild.cs:260-300` 与 `460-520` 对上 C:18120 / 18329-18398，
+读 `src/Ufbx.NET/Parse/SceneBuild.cs:260-300` 与 `460-520` 对上 C:18120 / 18329-18398，
 然后从第 3.3 节第 2 步开始。**不要重写已有实现**，先确认它是否已经正确。

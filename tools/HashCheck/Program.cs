@@ -20,7 +20,7 @@ using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace HashCheck
 {

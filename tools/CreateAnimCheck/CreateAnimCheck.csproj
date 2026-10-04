@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Isolated verification for batch K (the animation-creation chain). Not part of ufbx-cs.sln.
+  <!-- Isolated verification for batch K (the animation-creation chain). Not part of ufbx.net.sln.
        Replays the record stream of tools/create_anim_oracle.c (built with zig, #include "ufbx.c")
-       through src/Ufbx/Parse/CreateAnim.cs + UfbxApi.CreateAnim and compares every record of the
+       through src/Ufbx.NET/Parse/CreateAnim.cs + UfbxApi.CreateAnim and compares every record of the
        grammar documented in the oracle header. Also serves as the mutation-test rig. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -18,8 +18,8 @@
     <NoWarn>CS0168;CS0219;CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
-    <Compile Include="..\..\tests\Ufbx.Tests\HashScene.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
+    <Compile Include="..\..\tests\Ufbx.NET.Tests\HashScene.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

@@ -14,8 +14,9 @@ project.assets.json
 *.nuget.targets
 *.GeneratedMSBuildEditorConfig.editorconfig
 
-# `src/Ufbx/Ufbx/` 是一次误在子目录下执行 dotnet build 留下的重复工程副本
-src/Ufbx/Ufbx/
+# `src/Ufbx.NET/Ufbx/` 是一次误在子目录下执行 dotnet build 留下的重复工程副本
+# （改名时只重命名了外层目录，这个内层副本的名字没跟着变，规则按实际路径写。）
+src/Ufbx.NET/Ufbx/
 
 # ---------- IDE / 编辑器 / 操作系统 ----------
 .vs/

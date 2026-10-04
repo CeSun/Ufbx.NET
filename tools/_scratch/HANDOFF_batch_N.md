@@ -8,7 +8,7 @@
 > `streamcheck 2243020 / 3 failed` 仍是另一条线的既存问题）。
 >
 > ⚠️ **本文第 3.1 节的现状描述有偏差，接手请以 `COORDINATION.md` 批 N 一节的开头为准**：
-> `ufbxi_evaluate_skinning()` 本体**早已移植完毕**（`src/Ufbx/Parse/SceneOpts.cs`），且**载入侧
+> `ufbxi_evaluate_skinning()` 本体**早已移植完毕**（`src/Ufbx.NET/Parse/SceneOpts.cs`），且**载入侧
 > 调用点 (ufbx.c:25371) 早就被 2179 个 golden 覆盖**（`test/hash_scene.c:103` 设了
 > `evaluate_skinning = true`，`test/hash_scene.h:620-622` 哈希 skinned 三件套）。
 > 真正缺的只有 **evaluate 侧一处**（ufbx.c:26413-26419），因为 `test/hash_scene.c:136` 传的是
@@ -23,7 +23,7 @@
 ## 0. 总纲（不可改）
 
 - 长期目标（用户原话）：**「继续移植，目的全部移植完成」** —— 把 `C:/Workspace/_analyze_ufbx/ufbx.{c,h}`
-  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx`。
+  v0.23.1 的**全部公开 ABI** 移植到纯 C# 工程 `C:\Workspace\ufbx-cs\src\Ufbx.NET`。
   ⚠️ **公开 ABI 账本已在批 M 达到 114/114**（见 `COORDINATION.md` 最新一节第 8 条）。
   ⇒ **本批不再有"未移植的公开 ABI"**，任务是**覆盖深度**：把 goldens 与所有差分从
   「同一子图」升级成「全子图」。
@@ -42,7 +42,7 @@
 
   ⚠️ 批 L 交接文档里的 `-mcpu=x86-64` 是**笔误**，zig 只认 `x86_64`。
   触及 sin/cos/atan2/pow 追加 `-DUFBX_EXTERNAL_MATH` + `C:/Workspace/_analyze_ufbx/extra/ufbx_math.c`。
-- C# 构建：`dotnet build ufbx-cs.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`。
+- C# 构建：`dotnet build ufbx.net.sln -c Release`。回归总闸：`bash tools/_scratch/battery.sh`。
 - ⚠️ **`perl` 已不在 PATH 上**，批 J/K 的 `tools/_mut_bake.sh` / `tools/_mut_createanim.sh` 会静默失败。
   变异脚本照抄 **`tools/_mut_pool.sh`**（python **字节级**替换 + `cmp` 还原证明）。
   两个踩过的坑：(1) 锚点**必须单行**（argv 传不了换行）；(2) 锚点不能是另一处的**子串**
@@ -83,7 +83,7 @@
 
 ### 3.1 现状（为什么这是最大的欠账）
 
-- `src/Ufbx/Api/UfbxSkinApi.cs` **已有** skinning 的**访问器**（`ufbx_get_skin_vertex_matrix`、
+- `src/Ufbx.NET/Api/UfbxSkinApi.cs` **已有** skinning 的**访问器**（`ufbx_get_skin_vertex_matrix`、
   `ufbx_get_blend_shape_offset_index`、`ufbx_get_blend_shape_vertex_offset`、
   `ufbx_get_blend_vertex_offset`、`ufbx_add_blend_shape_vertex_offsets`、
   `ufbx_add_blend_vertex_offsets` 等七件），它们读的是 `UfbxSkinDeformer`/`UfbxBlendShape` 上的
@@ -140,6 +140,6 @@
 ## 5. 上手第一件事
 
 读 `COORDINATION.md` 最新一节（批 M）+ `PORTING_NOTES.md` 规则 13/14 与 #3/#4/#7/#8/规则 12，
-读 `src/Ufbx/Api/UfbxSkinApi.cs`、`src/Ufbx/Parse/EvaluateScene.cs`、
-`src/Ufbx/Parse/Load.cs:180-195`（`UfbxiReaderNotPortedException` 的抛出点），
+读 `src/Ufbx.NET/Api/UfbxSkinApi.cs`、`src/Ufbx.NET/Parse/EvaluateScene.cs`、
+`src/Ufbx.NET/Parse/Load.cs:180-195`（`UfbxiReaderNotPortedException` 的抛出点），
 然后从第 2 节的基线复现开始。**不要重写已有实现**，先确认它是否已经正确。

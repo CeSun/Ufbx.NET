@@ -2,7 +2,7 @@
 //
 // Drives the ported load spine (`UfbxiLoad.Load`) over corpus files. Because the load driver
 // calls `UfbxiToplevel.SceneBuild(uc)` immediately after `UfbxiToplevel.ReadRoot(uc)`
-// (src/Ufbx/Parse/Load.cs:858-863), the *reader name* of the thrown
+// (src/Ufbx.NET/Parse/Load.cs:858-863), the *reader name* of the thrown
 // `UfbxiReaderNotPortedException` classifies each file exactly:
 //
 //   "ufbxi_pre/finalize_scene"  -> ReadRoot completed (aliases: ReadLegacyRoot completed too,
@@ -24,7 +24,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace S1SelfCheck
 {
@@ -388,7 +388,7 @@ namespace S1SelfCheck
         {
             string dir = AppContext.BaseDirectory;
             for (int i = 0; i < 6 && dir != null; i++) {
-                if (File.Exists(Path.Combine(dir, "ufbx-cs.sln"))) return dir;
+                if (File.Exists(Path.Combine(dir, "ufbx.net.sln"))) return dir;
                 DirectoryInfo parent = Directory.GetParent(dir);
                 dir = parent != null ? parent.FullName : null;
             }

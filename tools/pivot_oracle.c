@@ -10,7 +10,7 @@
 //   ufbxi_init_synthetic_vec3_prop                    (ufbx.c:12475-12487)
 //   ufbxi_sort_properties / ufbxi_deduplicate_properties
 //   scene->metadata.pivot_handling                    (ufbx.c:23736)
-// The C# twin is src/Ufbx/Parse/SceneBuild.cs:464-583 (`UfbxiSceneBuild.PreFinalizeScene`), repla-
+// The C# twin is src/Ufbx.NET/Parse/SceneBuild.cs:464-583 (`UfbxiSceneBuild.PreFinalizeScene`), repla-
 // yed by tools/PivotCheck.
 //
 // Compile (the only recognised configuration, see HANDOFF_batch_O.md section 0):

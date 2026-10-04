@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Isolated verification for batch M (the thread pool ABI family). Not part of
-       ufbx-cs.sln. Replays the record stream of tools/pool_oracle.c (built with zig,
-       #include "ufbx.c") through src/Ufbx/Parse/ThreadPool.cs + Parse/Objects.cs +
+       ufbx.net.sln. Replays the record stream of tools/pool_oracle.c (built with zig,
+       #include "ufbx.c") through src/Ufbx.NET/Parse/ThreadPool.cs + Parse/Objects.cs +
        Parse/DomNode.cs + Parse/AsciiDomNode.cs + Api/UfbxApi.cs and compares every record of
        the grammar documented in the oracle header. Also serves as the mutation-test rig. -->
   <PropertyGroup>
@@ -19,8 +19,8 @@
     <NoWarn>CS0168;CS0219;CS0414</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
-    <Compile Include="..\..\tests\Ufbx.Tests\HashScene.cs" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
+    <Compile Include="..\..\tests\Ufbx.NET.Tests\HashScene.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>

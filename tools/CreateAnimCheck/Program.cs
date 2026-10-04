@@ -3,7 +3,7 @@
 // Replays the record stream of tools/create_anim_oracle.c (built with zig, `#include "ufbx.c"`, so
 // it runs the original `ufbxi_check_string()` / `ufbxi_push_anim_string()` / the three override
 // comparators / `ufbxi_create_anim_imp()` / `ufbx_create_anim()` ABI) through
-// src/Ufbx/Parse/CreateAnim.cs + UfbxApi.CreateAnim.
+// src/Ufbx.NET/Parse/CreateAnim.cs + UfbxApi.CreateAnim.
 //
 // The oracle owns the whole variant table and re-emits the `ufbx_anim_opts` it handed to
 // `ufbx_create_anim()` as `I`-family *input* records, so this harness has no mirror of
@@ -52,7 +52,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using Ufbx;
+using Ufbx.NET;
 
 namespace CreateAnimCheck
 {

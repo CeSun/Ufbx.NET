@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Bit-exactness harness for the ported load spine: replays the per-file records of
        tools/load_oracle.c (output tools/load_oracle.txt, path list tools/load_corpus.txt) against
-       UfbxiLoad.Load / UfbxApi.LoadFile and classifies each file. Not part of ufbx-cs.sln, like
+       UfbxiLoad.Load / UfbxApi.LoadFile and classifies each file. Not part of ufbx.net.sln, like
        tools/UtilCheck.
        Usage: dotnet run project tools/LoadCheck with the oracle output tools/load_oracle.txt -->
   <PropertyGroup>
@@ -18,7 +18,7 @@
     <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\src\Ufbx.NET\**\*.cs" Exclude="..\..\src\Ufbx.NET\bin\**;..\..\src\Ufbx.NET\obj\**;..\..\src\Ufbx.NET\_quarantine\**" />
     <Compile Include="Program.cs" />
   </ItemGroup>
 </Project>
