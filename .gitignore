@@ -1,0 +1,92 @@
+# ---------- .NET 构建产物 ----------
+[Bb]in/
+[Oo]bj/
+*.dll
+*.exe
+*.pdb
+*.lib
+*.cache
+*.nupkg
+*.snupkg
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+*.GeneratedMSBuildEditorConfig.editorconfig
+
+# `src/Ufbx/Ufbx/` 是一次误在子目录下执行 dotnet build 留下的重复工程副本
+src/Ufbx/Ufbx/
+
+# ---------- IDE / 编辑器 / 操作系统 ----------
+.vs/
+*.vsidx
+*.suo
+*.user
+*.userosscache
+*.userprefs
+*.sln.docstates
+.DS_Store
+Thumbs.db
+*~
+*.tmp
+*.swp
+
+# ---------- zig 编译缓存（C oracle 用 zig cc 构建） ----------
+.zig-cache/
+.zig-cache-s4c/
+.zig-global-s4c/
+
+# ---------- Agent 工作区状态（结论已蒸馏进 COORDINATION.md / PORTING_NOTES.md）----------
+.workbuddy/
+
+# ---------- 差分数据：oracle / port 输出 ----------
+# 大体积生成物：由 tools/*.c 的 oracle 对只读参考树跑出来，单个最大 44MB。
+# 重新生成方式见 README「差分校验怎么跑」一节。
+tools/*_oracle.txt
+tools/*_oracle_*.txt
+tools/*_port.txt
+tools/*_port_*.txt
+tools/inflate_corpus.txt
+
+# ---------- tools 根：下划线前缀的一次性探针输出与二进制 ----------
+tools/_*.txt
+tools/_*.err
+tools/_*.exe
+tools/_*.pdb
+tools/_bake_helper_probe
+tools/_s4c_trace/
+# 例外：变异脚本及其用例表 / 扫描结果是移植覆盖度的证据，必须入仓库
+!tools/_mut_*
+
+# ---------- tools/_scratch ----------
+# 探针跑出来的原始输出忽略，只留探针源码 (.c)、交接文档 (.md)、脚本 (.sh)、回归记录
+tools/_scratch/_*.txt
+tools/_scratch/*.bak
+tools/_scratch/*.bak2
+tools/_scratch/*.bak_*
+tools/_scratch/*.exe
+tools/_scratch/*.pdb
+# 参考树 ufbx.c 的私有补丁副本（`ufbx_nofix.c`、`ufbx_dbg/`）：都是 1.2MB 量级的上游源码拷贝，
+# 由字节补丁 / 调试插桩派生而来，不入仓库——上游本体请到 README 里指明的参考树去看。
+tools/_scratch/ufbx_nofix.c
+tools/_scratch/ufbx_dbg/
+
+# S1SelfCheck 的一次性转储输出
+tools/S1SelfCheck/_dump.txt
+
+# ---------- tools 根：手抄本 ----------
+tools/a.txt
+tools/b.txt
+tools/golden_nocr.txt
+tools/mathvec_regen.txt
+tools/math_vectors_plain.txt
+
+# ---------- 明确保留（备忘，勿加进上面的规则）----------
+# tools/golden_hashes.txt      ← 2179 个文件 x N 组 golden 哈希基线，让 `goldens` 回归脱机可跑
+# tools/math_vectors.txt       ← mathvec 回归的输入与期望
+# tools/*_corpus.txt           ← 各 harness 选了哪些语料（含 tools/synth 手搓 FBX 的绝对路径）
+# tools/_mut_*_cases.txt       ← 变异用例表
+# tools/_mut_*_sweep_*.txt     ← 变异扫描结果
+# tools/_scratch/battery_after_*.txt
+# tools/_scratch/HANDOFF_*.md
+# tools/_scratch/battery.sh

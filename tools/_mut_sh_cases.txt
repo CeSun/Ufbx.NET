@@ -1,0 +1,45 @@
+# Batch P mutation cases. Tab separated: <tag> <repo-relative-path> <old> <new>
+#
+# C_ = predicted to BITE (the record stream must differ), Q_ = predicted INERT.
+# Two Q_identity_* cases are harness self-checks: a byte-identical rewrite must produce 0
+# mismatches, otherwise the rig itself is broken.
+#
+# Anchor uniqueness was pre-checked with a python `s.count(old)` pass: every `old` below
+# occurs exactly once in its file.
+#
+# tag	path	old	new
+C_sh_gate_true	src/Ufbx/Parse/SceneBuild.cs	if (hasUnscaledChildren[node.TypedId] && node.ScaleHelper == null) {	if (true) {
+C_sh_reflect_one	src/Ufbx/Parse/SceneBuild.cs	? preNode.ConstantScale.X : 1.0;	? preNode.ConstantScale.X : 0.0;
+C_sh_gate_noconst	src/Ufbx/Parse/SceneBuild.cs	|| !preNode.HasConstantScale || UfbxMath.Abs	|| UfbxMath.Abs
+C_sh_gate_compeps	src/Ufbx/Parse/SceneBuild.cs	UfbxMath.Abs(scale.X) <= compensateEpsilon)	UfbxMath.Abs(scale.X) <= -1.0)
+C_sh_nofallback	src/Ufbx/Parse/SceneBuild.cs	&& uc.Opts.InheritModeHandling != UfbxInheritModeHandling.CompensateNoFallback) {	) {
+C_sh_setup_skip	src/Ufbx/Parse/SceneBuild.cs	UfbxiReadElement.SetupScaleHelper(uc, node, fbxId);	uc.HasScaleHelperNodes = true;
+C_sh_comp_parent	src/Ufbx/Parse/SceneBuild.cs	if (UfbxMath.Abs(scale.X - 1.0) >= scaleEpsilon) {	if (UfbxMath.Abs(scale.X - 1.0) < scaleEpsilon) {
+C_sh_unscaled_false	src/Ufbx/Parse/SceneBuild.cs	hasUnscaledChildren[dst.TypedId] = true;	hasUnscaledChildren[dst.TypedId] = false;
+C_sh_constscale_init	src/Ufbx/Parse/SceneBuild.cs	preNode.HasConstantScale = true;	preNode.HasConstantScale = false;
+C_sh_constscale_anim	src/Ufbx/Parse/SceneBuild.cs	                                            preNode.HasConstantScale = false;	                                            preNode.HasConstantScale = true;
+C_sh_scale_eps	src/Ufbx/Parse/SceneBuild.cs	const double scaleEpsilon = (double)0.001f;	const double scaleEpsilon = (double)0.5f;
+C_sh_comp_eps	src/Ufbx/Parse/SceneBuild.cs	const double compensateEpsilon = (double)0.01f;	const double compensateEpsilon = (double)0.5f;
+Q_sh_recursive_setup	src/Ufbx/Parse/SceneBuild.cs	UfbxiReadElement.SetupScaleHelper(uc, child, childFbxId);	uc.HasScaleHelperNodes = true;
+Q_sh_recursive_gate	src/Ufbx/Parse/SceneBuild.cs	if (preChild.Parent != node.TypedId || child.OriginalInheritMode == UfbxInheritMode.ComponentwiseScale) {	if (preChild.Parent != node.TypedId && child.OriginalInheritMode == UfbxInheritMode.ComponentwiseScale) {
+Q_sh_recursive_gate2	src/Ufbx/Parse/SceneBuild.cs	if (!preChild.HasRecursiveScaleHelper && child.OriginalInheritMode != UfbxInheritMode.Normal) {	if (!preChild.HasRecursiveScaleHelper) {
+Q_sh_recursive_comp	src/Ufbx/Parse/SceneBuild.cs	child.IsScaleCompensateParent = false;	child.IsScaleCompensateParent = true;
+Q_identity_reflect	src/Ufbx/Parse/SceneBuild.cs	? preNode.ConstantScale.X : 1.0;	? preNode.ConstantScale.X : 1.0;
+C_bake_t_gate	src/Ufbx/Parse/Bake.cs	if (!node.IsScaleHelper && node.Parent != null && node.Parent.ScaleHelper != null) {	if (node.Parent != null && node.Parent.ScaleHelper != null) {
+C_bake_t_resample	src/Ufbx/Parse/Bake.cs	if (!scaleHelperT.ConstantScale) {	if (scaleHelperT.ConstantScale) {
+C_bake_t_pushtimes	src/Ufbx/Parse/Bake.cs	                    PushResampledTimes(bc, scaleHelperT.ScaleKeys);	                    ;
+C_bake_t_const	src/Ufbx/Parse/Bake.cs	constantScaleT = node.Parent.ScaleHelper.InheritScale;	constantScaleT = node.Parent.ScaleHelper.LocalTransform.Scale;
+C_bake_t_apply	src/Ufbx/Parse/Bake.cs	if (hasScaleHelperT) {	if (false) {
+C_bake_s_apply	src/Ufbx/Parse/Bake.cs	if (hasScaleHelperS) {	if (false) {
+C_bake_s_gate	src/Ufbx/Parse/Bake.cs	if (node.IsScaleHelper && node.Parent != null && node.Parent.InheritScaleNode != null &&	if (!node.IsScaleHelper && node.Parent != null && node.Parent.InheritScaleNode != null &&
+Q_identity_bake	src/Ufbx/Parse/Bake.cs	if (!scaleHelperT.ConstantScale) {	if (!scaleHelperT.ConstantScale) {
+C_eval_helper_gate	src/Ufbx/Parse/Evaluate.cs	if (parent.ScaleHelper != null && (flags & (uint)UfbxTransformFlags.IgnoreScaleHelper) == 0) {	if (false) {
+C_eval_trans_scale	src/Ufbx/Parse/Evaluate.cs	translationScale = helperScale.ValueVec3;	translationScale = new UfbxVec3(1.0, 1.0, 1.0);
+C_eval_is_sh	src/Ufbx/Parse/Evaluate.cs	if (node.IsScaleHelper) {	if (!node.IsScaleHelper) {
+Q_eval_while	src/Ufbx/Parse/Evaluate.cs	while (p != null && p.ScaleHelper != null) {	while (false) {
+C_shr_link	src/Ufbx/Parse/ReadElement.cs	node.ScaleHelper = scaleNode;	uc.HasScaleHelperNodes = true;
+C_shr_flag	src/Ufbx/Parse/ReadElement.cs	scaleNode.IsScaleHelper = true;	scaleNode.IsScaleHelper = false;
+C_shr_connect	src/Ufbx/Parse/ReadElement.cs	ConnectOo(uc, scaleFbxId, nodeFbxId);	;
+C_shr_move_props	src/Ufbx/Parse/ReadElement.cs	modified.ValueVec3 = ScaleHelperPropDefaults[i];	modified.ValueVec3 = new UfbxVec3(0.0, 0.0, 0.0);
+C_shr_hasflag	src/Ufbx/Parse/ReadElement.cs	uc.HasScaleHelperNodes = true;	uc.HasScaleHelperNodes = false;
+Q_identity_shr	src/Ufbx/Parse/ReadElement.cs	scaleNode.IsScaleHelper = true;	scaleNode.IsScaleHelper = true;

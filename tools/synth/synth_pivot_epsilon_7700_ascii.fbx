@@ -1,0 +1,75 @@
+; FBX 7.7.0 project file
+; ----------------------------------------------------
+; SYNTHETIC (batch R). Not produced by any DCC tool.
+;
+; WHY: `data/*.fbx` (690 files) contains no node whose RotationPivot falls strictly inside
+; (0, 0.0009765625), and no node with 0 < |rp-sp|_1 <= 0.001. Both are load-bearing:
+;   * `ufbxi_is_vec3_zero()` (ufbx.c:11570) is EXACT (== 0.0) and gates
+;     UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT;
+;   * `ufbxi_pivot_nonzero()` (ufbx.c:18091) uses |x| >= 0.0009765625 and gates
+;     UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT (over rp / sp / so).
+; A RotationPivot of 0.0005 makes the two disagree -- ADJUST_TO_PIVOT engages,
+; ADJUST_TO_ROTATION_PIVOT does not -- which is exactly the discrimination the real corpus
+; cannot produce.
+;
+;   * The same node has |rp - sp|_1 = 0.0005, i.e. 0 < err <= pivot_epsilon(0.001)
+;     (ufbx.c:18370-18376), so `can_modify_pivot` stays TRUE. That is the boundary the real
+;     corpus never reaches (measured: the smallest non-zero pivot component anywhere in
+;     data/ is 0.00799 -- 8x the `ufbxi_pivot_nonzero` threshold).
+
+FBXHeaderExtension:  {
+	FBXHeaderVersion: 1004
+	FBXVersion: 7700
+	Creator: "ufbx-cs batch R synthetic"
+}
+GlobalSettings:  {
+	Version: 1000
+	Properties70:  {
+		P: "UpAxis", "int", "Integer", "",1
+		P: "UpAxisSign", "int", "Integer", "",1
+		P: "FrontAxis", "int", "Integer", "",2
+		P: "FrontAxisSign", "int", "Integer", "",1
+		P: "CoordAxis", "int", "Integer", "",0
+		P: "CoordAxisSign", "int", "Integer", "",1
+		P: "UnitScaleFactor", "double", "Number", "",1
+		P: "OriginalUnitScaleFactor", "double", "Number", "",1
+	}
+}
+Definitions:  {
+	Version: 100
+	Count: 2
+	ObjectType: "GlobalSettings" {
+		Count: 1
+	}
+	ObjectType: "Model" {
+		Count: 2
+	}
+}
+Objects:  {
+	Model: 100000, "Model::Root", "Null" {
+		Version: 232
+		Properties70:  {
+			P: "Lcl Translation", "Lcl Translation", "", "A",0,0,0
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+		}
+	}
+	Model: 100001, "Model::TinyPivot", "Null" {
+		Version: 232
+		Properties70:  {
+			P: "Lcl Translation", "Lcl Translation", "", "A",1,2,3
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+			P: "RotationPivot", "Vector3D", "Vector", "",0.0005,0,0
+			P: "ScalingPivot", "Vector3D", "Vector", "",0,0,0
+			P: "ScalingOffset", "Vector3D", "Vector", "",0,0,0
+			P: "GeometricTranslation", "Vector3D", "Vector", "",0,0,0
+			P: "GeometricRotation", "Vector3D", "Vector", "",0,0,0
+			P: "GeometricScaling", "Vector3D", "Vector", "",1,1,1
+		}
+	}
+}
+Connections:  {
+	C: "OO",100001,100000
+	C: "OO",100000,0
+}

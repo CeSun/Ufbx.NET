@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Bit-exactness harness for the ported binary DOM layer: replays the records of
+       tools/dom_oracle.c (output tools/dom_oracle.txt) from the ported parser and diffs them
+       line by line. Not part of ufbx-cs.sln, like tools/UtilCheck.
+       Usage: dotnet run project tools/DomCheck with the oracle path tools/dom_oracle.txt -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>DomCheck</RootNamespace>
+    <AssemblyName>DomCheck</AssemblyName>
+    <RollForward>LatestMajor</RollForward>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <BaseOutputPath>bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

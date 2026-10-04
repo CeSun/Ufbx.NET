@@ -1,0 +1,45 @@
+ERR   data/synthetic_bad_inf_nan_fail_7500_ascii.fbx -> Unknown | <no description>
+ERR   data/synthetic_bad_inf_nan_fail_7700_ascii.fbx -> Unknown | <no description>
+ERR   data/synthetic_node_depth_fail_7400_binary.fbx -> Unknown | depth < UFBXI_MAX_NODE_DEPTH
+ERR   data/synthetic_node_depth_fail_7500_ascii.fbx -> Unknown | depth < UFBXI_MAX_NODE_DEPTH
+ERR   data/synthetic_truncated_compressed_fail_7400_binary.fbx -> Unknown | Bad DEFLATE data
+ERR   data/synthetic_unsupported_cube_fail_8000_ascii.fbx -> Unknown | ufbxi_ascii_accept(uc, UFBXI_ASCII_NAME)
+=== S1 self-check ===
+corpus root : C:\Workspace\_analyze_ufbx
+files       : 714
+
+ReadRoot completed : 4
+  data/blender_279_bone_radius_7400_binary.fbx
+  data/blender_402_ortho_scale_local_7400_binary.fbx
+  data/blender_402_ortho_scale_unit_7400_binary.fbx
+  data/synthetic_unicode_7500_binary.fbx
+
+Reader seam hits   : 704
+     15  ufbxi_parse_legacy_toplevel
+     20  ufbxi_read_anim_stack
+      4  ufbxi_read_character
+      4  ufbxi_read_constraint
+      4  ufbxi_read_line
+    442  ufbxi_read_mesh
+      9  ufbxi_read_nurbs_curve
+      6  ufbxi_read_nurbs_surface
+    200  ufbxi_read_synthetic_attribute
+
+Parse errors       : 6
+      2  Unknown | <no description>
+      1  Unknown | Bad DEFLATE data
+      2  Unknown | depth < UFBXI_MAX_NODE_DEPTH
+      1  Unknown | ufbxi_ascii_accept(uc, UFBXI_ASCII_NAME)
+
+Unexpected scene returns : 0
+Unexpected crashes       : 0
+
+=== Detail (ReadRoot completed) ===
+OK    data/blender_279_bone_radius_7400_binary.fbx
+      version=7400 ascii=0 elements=13 element_ptrs=13 fbx_ids=13 node_ids=7 connections=12 props=27 templates=3 top_nodes=11 root_id=0x0000000000000000
+OK    data/blender_402_ortho_scale_local_7400_binary.fbx
+      version=7400 ascii=0 elements=7 element_ptrs=7 fbx_ids=7 node_ids=4 connections=6 props=109 templates=3 top_nodes=11 root_id=0x0000000000000000
+OK    data/blender_402_ortho_scale_unit_7400_binary.fbx
+      version=7400 ascii=0 elements=7 element_ptrs=7 fbx_ids=7 node_ids=4 connections=6 props=106 templates=3 top_nodes=11 root_id=0x0000000000000000
+OK    data/synthetic_unicode_7500_binary.fbx
+      version=7500 ascii=0 elements=4 element_ptrs=4 fbx_ids=4 node_ids=4 connections=0 props=9900 templates=0 top_nodes=1 root_id=0x0000000000000000

@@ -1,0 +1,24 @@
+# 批 Q 变异病例：复用已有的 BakeCheck 差分测具，验证批 J 遗留的两项到底有没有覆盖。
+# Tab 分隔：<tag> <repo-relative-path> <old> <new>
+#
+# 背景：`tools/_mut_bake.sh` 原本用 perl，而本机已无 perl —— 批 J2 的
+# `M_antipodal | mismatches 0` 因此不可信（脚本已改用 python 重写）。这里用能真正生效的
+# 脚本重测。
+#
+# 相关事实（tools/_scratch/_q_probe.txt，跑遍全部 690 个 data/*.fbx）：
+#   * 默认 bake 选项下，30 个文件 / 75 个节点 / 668 个旋转关键帧真的被 fix_antipodal 翻转过
+#     （最多的三个：maya_kenney_character_7700_binary 224、blender_293_barbarian_7400_binary
+#     190、maya_axes_anim_7700_ascii 33）。
+#   * 3397 条 anim curve 里 2270 条的 keyframe 跨度严格内嵌于 [time_begin, time_end]，
+#     分布在 172 个文件。
+#
+# tag	path	old	new
+Q_antipodal_off	src/Ufbx/Parse/Bake.cs	cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);	if (false) cur.Value = UfbxQuat.FixAntipodal(cur.Value, src[i - 1].Value);
+Q_antipodal_inv	src/Ufbx/Math/Types.cs	if (Dot(q, reference) < 0.0)	if (Dot(q, reference) > 0.0)
+Q_pad_zero	src/Ufbx/Parse/Bake.cs	double padding = 0.5 / sampleRate;	double padding = 0.0;
+Q_stop_nopad	src/Ufbx/Parse/Bake.cs	double stop = bTime - padding;	double stop = bTime;
+Q_flat_noskip	src/Ufbx/Parse/Bake.cs	if (a.Value == b.Value && a.Right.Dy == 0.0f && b.Left.Dy == 0.0f) continue;	if (false) continue;
+Q_mindur_noskip	src/Ufbx/Parse/Bake.cs	if (duration <= minDuration) continue;	if (false) continue;
+Q_factor3	src/Ufbx/Parse/Bake.cs	factor *= 2.0;	factor *= 3.0;
+Q_start_noceil	src/Ufbx/Parse/Bake.cs	double start = UfbxMath.Ceil((aTime + padding) * sampleRate / factor) * factor;	double start = (aTime + padding) * sampleRate;
+Q_identity_pad	src/Ufbx/Parse/Bake.cs	double padding = 0.5 / sampleRate;	double padding = 0.5 / sampleRate;

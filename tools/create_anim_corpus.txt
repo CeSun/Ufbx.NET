@@ -1,0 +1,37 @@
+# Batch K create_anim corpus: animated files (s4b's set) plus static/zero-layer files,
+# so both the num_layers>0 and num_layers==0 paths run against real scenes.
+# One path per line, relative to C:/Workspace/_analyze_ufbx; order = argv order of create_anim_oracle.exe.
+data/maya_anim_extrapolation_7700_binary.fbx
+data/maya_anim_interpolation_7700_binary.fbx
+data/maya_anim_layers_7500_binary.fbx
+data/maya_anim_layers_acc_7500_binary.fbx
+data/maya_anim_layers_over_7500_binary.fbx
+data/maya_anim_layers_over_acc_7500_binary.fbx
+data/maya_anim_layers_over_acc_orders_7500_binary.fbx
+data/maya_anim_layer_quat_to_euler_7700_ascii.fbx
+data/maya_anim_diffuse_curve_7700_ascii.fbx
+data/maya_anim_light_7500_binary.fbx
+data/maya_anim_no_inherit_scale_7700_ascii.fbx
+data/maya_mixed_inherit_mode_7700_ascii.fbx
+data/maya_constraint_zoo_7500_binary.fbx
+data/maya_blend_inbetween_7500_binary.fbx
+data/maya_dual_quaternion_7500_ascii.fbx
+data/blender440_shape_weight_anim_7400_binary.fbx
+data/blender_279_shape_weights_7400_binary.fbx
+data/max2009_cube_anim_6100_binary.fbx
+data/max2009_blob_6100_binary.fbx
+data/motionbuilder_extrapolation_mirror_7700_binary.fbx
+data/motionbuilder_extrapolation_mirror_count_7700_binary.fbx
+data/motionbuilder_extrapolation_repeat_count_7700_binary.fbx
+data/motionbuilder_extrapolation_relative_count_7700_binary.fbx
+data/motionbuilder_extrapolation_slope_7700_binary.fbx
+data/motionbuilder_tangent_auto_bias_absolute_sign_7700_ascii.fbx
+data/synthetic_recursive_connections_7700_ascii.fbx
+data/synthetic_recursive_transform_6100_ascii.fbx
+data/synthetic_tcdefinition_127_7700_ascii.fbx
+data/synthetic_blend_order_7500_ascii.fbx
+data/maya_scale_no_inherit_6100_ascii.fbx
+data/blender_279_empty_cube_6100_ascii.fbx
+data/max2009_cube_texture_6100_binary.fbx
+data/blender_272_cube_7400_binary.fbx
+data/maya_anim_diffuse_curve_7700_ascii.fbx

@@ -1,0 +1,7 @@
+M_color_default | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 
+M_fps_ntsc | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 
+M_fps_full | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 
+M_fps_film | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 
+M_fps_5994 | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 
+M_layerw_build | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 
+M_layerw_eval | exit=0 | goldens: 2179 files, 2179 matched, 0 mismatched, 0 load-errors | 

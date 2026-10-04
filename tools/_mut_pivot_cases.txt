@@ -1,0 +1,46 @@
+# Batch O mutation controls. Tab separated: <tag> <repo-relative-path> <old> <new>
+# `old` must occur EXACTLY once in the file (byte level). Anchors are single lines and carry their
+# leading indentation where a bare statement occurs more than once.
+#
+# C_ = I predict the pivot differential catches it.  Q_ = I predict it does NOT (equivalent by
+# construction, or an identity transform that doubles as a harness self-check).
+C_required_off	src/Ufbx/Parse/SceneBuild.cs	|| uc.Opts.PivotHandling == UfbxPivotHandling.AdjustToRotationPivot) required = true;	|| false) required = true;
+C_block_off	src/Ufbx/Parse/SceneBuild.cs	|| uc.Opts.PivotHandling == UfbxPivotHandling.AdjustToRotationPivot) {	|| false) {
+C_atp_pred_false	src/Ufbx/Parse/SceneBuild.cs	shouldModifyPivot = !UfbxiProperties.IsVec3Zero(rotationPivot);	shouldModifyPivot = false;
+C_atp_pred_epsilon	src/Ufbx/Parse/SceneBuild.cs	shouldModifyPivot = !UfbxiProperties.IsVec3Zero(rotationPivot);	shouldModifyPivot = PivotNonzero(rotationPivot);
+C_atrp_pred_false	src/Ufbx/Parse/SceneBuild.cs	shouldModifyPivot = PivotNonzero(rotationPivot) || PivotNonzero(scalingPivot) || PivotNonzero(scalingOffset);	shouldModifyPivot = false;
+C_atrp_pred_drop_so	src/Ufbx/Parse/SceneBuild.cs	shouldModifyPivot = PivotNonzero(rotationPivot) || PivotNonzero(scalingPivot) || PivotNonzero(scalingOffset);	shouldModifyPivot = PivotNonzero(rotationPivot) || PivotNonzero(scalingPivot);
+C_empty_check_false	src/Ufbx/Parse/SceneBuild.cs	if (nodeAttribType[node.TypedId] == UfbxElementType.Empty) {	if (false) {
+C_retain_invert	src/Ufbx/Parse/SceneBuild.cs	if (!uc.Opts.PivotHandlingRetainEmpties) {	if (uc.Opts.PivotHandlingRetainEmpties) {
+C_retain_always_skip	src/Ufbx/Parse/SceneBuild.cs	if (!uc.Opts.PivotHandlingRetainEmpties) {	if (true) {
+C_retain_never_skip	src/Ufbx/Parse/SceneBuild.cs	if (!uc.Opts.PivotHandlingRetainEmpties) {	if (false) {
+C_skin_guard_off	src/Ufbx/Parse/SceneBuild.cs	if (preNode.HasSkinDeformer) {	if (false) {
+C_nofallback_off	src/Ufbx/Parse/SceneBuild.cs	if (uc.Opts.GeometryTransformHandling == UfbxGeometryTransformHandling.ModifyGeometryNoFallback) {	if (false) {
+C_eps_zero	src/Ufbx/Parse/SceneBuild.cs	const double pivotEpsilon = (double)0.001f;	const double pivotEpsilon = 0.0;
+C_eps_huge	src/Ufbx/Parse/SceneBuild.cs	const double pivotEpsilon = (double)0.001f;	const double pivotEpsilon = 1e300;
+C_can_modify_pivot_always	src/Ufbx/Parse/SceneBuild.cs	if (err > pivotEpsilon) {	if (false) {
+C_gate_and	src/Ufbx/Parse/SceneBuild.cs	if (canModifyPivot && (canModifyGeometryTransform || skipGeometryTransform)) {	if (canModifyPivot && (canModifyGeometryTransform && skipGeometryTransform)) {
+C_child_offset_zero	src/Ufbx/Parse/SceneBuild.cs	childOffset = UfbxVec3.Neg3(rotationPivot);	childOffset = UfbxVec3.Zero;
+C_atrp_geomtr_noadd	src/Ufbx/Parse/SceneBuild.cs	                                    geometricTranslation = UfbxVec3.Add3(geometricTranslation, childOffset);	                                    geometricTranslation = geometricTranslation;
+C_atrp_div_always	src/Ufbx/Parse/SceneBuild.cs	if (UfbxMath.Abs(initialScale) >= epsilon) {	if (true) {
+C_atrp_div_never	src/Ufbx/Parse/SceneBuild.cs	if (UfbxMath.Abs(initialScale) >= epsilon) {	if (false) {
+C_scaled_offset_swap	src/Ufbx/Parse/SceneBuild.cs	UfbxVec3 scaledOffset = UfbxVec3.Sub3(UfbxVec3.Add3(scalingOffset, scalingPivot), rotationPivot);	UfbxVec3 scaledOffset = UfbxVec3.Sub3(UfbxVec3.Add3(rotationPivot, scalingPivot), scalingOffset);
+C_new_sp_zero	src/Ufbx/Parse/SceneBuild.cs	UfbxVec3 newScalingPivot = unscaledOffset;	UfbxVec3 newScalingPivot = UfbxVec3.Zero;
+C_new_so_zero	src/Ufbx/Parse/SceneBuild.cs	UfbxVec3 newScalingOffset = UfbxVec3.Sub3(scaledOffset, newScalingPivot);	UfbxVec3 newScalingOffset = UfbxVec3.Zero;
+C_child_offset_pivot	src/Ufbx/Parse/SceneBuild.cs	childOffset = UfbxVec3.Sub3(unscaledOffset, scalingPivot);	childOffset = scalingPivot;
+C_skip_geo_invert	src/Ufbx/Parse/SceneBuild.cs	if (!skipGeometryTransform) {	if (skipGeometryTransform) {
+C_adj_pre_no_add	src/Ufbx/Parse/SceneBuild.cs	node.AdjustPreTranslation = UfbxVec3.Add3(node.AdjustPreTranslation, rotationPivot);	node.AdjustPreTranslation = node.AdjustPreTranslation;
+C_has_adj_false	src/Ufbx/Parse/SceneBuild.cs	node.HasAdjustTransform = true;	node.HasAdjustTransform = false;
+C_child_no_add	src/Ufbx/Parse/SceneBuild.cs	child.AdjustPreTranslation = UfbxVec3.Add3(child.AdjustPreTranslation, childOffset);	child.AdjustPreTranslation = child.AdjustPreTranslation;
+C_sort_off	src/Ufbx/Parse/SceneBuild.cs	UfbxiProperties.SortProperties(node.Props.Props);	UfbxiProperties.SortProperties((UfbxProp[])node.Props.Props.Clone());
+C_dedup_off	src/Ufbx/Parse/SceneBuild.cs	UfbxiProperties.DeduplicateProperties(node.Props);	UfbxiProperties.DeduplicateProperties(new UfbxProps() { Props = node.Props.Props });
+C_atp_scalpivot_nonzero	src/Ufbx/Parse/SceneBuild.cs	UfbxiReadElement.InitSyntheticVec3Prop(ref newProps[newPropCount++], UfbxiStrings.ScalingPivot, UfbxVec3.Zero, UfbxPropType.Vector);	UfbxiReadElement.InitSyntheticVec3Prop(ref newProps[newPropCount++], UfbxiStrings.ScalingPivot, rotationPivot, UfbxPropType.Vector);
+C_atrp_scalpivot_zero	src/Ufbx/Parse/SceneBuild.cs	UfbxiReadElement.InitSyntheticVec3Prop(ref newProps[newPropCount++], UfbxiStrings.ScalingPivot, newScalingPivot, UfbxPropType.Vector);	UfbxiReadElement.InitSyntheticVec3Prop(ref newProps[newPropCount++], UfbxiStrings.ScalingPivot, UfbxVec3.Zero, UfbxPropType.Vector);
+C_pivot_nonzero_eps0	src/Ufbx/Parse/SceneBuild.cs	const double epsilon = 0.0009765625;	const double epsilon = 0.0;
+C_meta_ph_retain	src/Ufbx/Parse/SceneUpdate.cs	scene.Metadata.PivotHandling = uc.Opts.PivotHandling;	scene.Metadata.PivotHandling = UfbxPivotHandling.Retain;
+Q_props_capacity_atp	src/Ufbx/Parse/SceneBuild.cs	newProps = new UfbxProp[numProps + 3];	newProps = new UfbxProp[numProps + 8];
+Q_props_capacity_atrp	src/Ufbx/Parse/SceneBuild.cs	newProps = new UfbxProp[numProps + 4];	newProps = new UfbxProp[numProps + 9];
+Q_dedup_twice	src/Ufbx/Parse/SceneBuild.cs	UfbxiProperties.DeduplicateProperties(node.Props);	UfbxiProperties.DeduplicateProperties(node.Props); UfbxiProperties.DeduplicateProperties(node.Props);
+Q_sort_twice	src/Ufbx/Parse/SceneBuild.cs	UfbxiProperties.SortProperties(node.Props.Props);	UfbxiProperties.SortProperties(node.Props.Props); UfbxiProperties.SortProperties(node.Props.Props);
+Q_identity_empty_guard	src/Ufbx/Parse/SceneBuild.cs	if (nodeAttribType[node.TypedId] == UfbxElementType.Empty) {	if (nodeAttribType[node.TypedId] == UfbxElementType.Empty && true) {
+Q_identity_err_init	src/Ufbx/Parse/SceneBuild.cs	double err = 0.0;	double err = 0.0 * 1.0;

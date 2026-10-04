@@ -1,0 +1,29 @@
+VERSION-DIVERGES 1743 data/fuzz/fuzz_0800.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1744 data/fuzz/fuzz_0801.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1745 data/fuzz/fuzz_0802.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1746 data/fuzz/fuzz_0803.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1747 data/fuzz/fuzz_0804.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1801 data/max2009_blob_5800_binary.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1808 data/max2009_cube_anim_5800_binary.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1812 data/max2009_cube_texture_5800_binary.fbx: C 5800 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1818 data/max7_blend_cube_5000_binary.fbx: C 5000 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1821 data/max7_cube_5000_binary.fbx: C 5000 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1823 data/max7_cube_normals_5000_binary.fbx: C 5000 (final), port 3000 (at the seam)
+VERSION-DIVERGES 1826 data/max7_skin_5000_binary.fbx: C 5000 (final), port 3000 (at the seam)
+files checked:                 2946
+C loaded (past the seam):      1107
+port reached the seam:         2057
+port failed inside the spine:  889
+  pre-seam error parity:       889
+  seam underrun, same error:   0
+past-seam pending (unported):  2057
+      stopped at ufbxi_read_root: 1530
+      stopped at ufbxi_obj_load: 452
+      stopped at ufbxi_mtl_load: 54
+      stopped at ufbxi_read_legacy_root: 21
+past-seam state differences:   521
+      ascii: 506
+      version: 15
+files with divergence:         0
+divergent records:             0
+LOAD CHECK PASS

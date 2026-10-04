@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Isolated verification for the S2-geometry readers (Parse/Geometry.cs). Not part of
+       ufbx-cs.sln. Currently: drives UfbxiGeometry.ReadLine over the retained DOM of the two
+       corpus files whose PointsIndex records the C oracle shows post-mutation
+       (ufbxi_read_line rewrites the DOM-aliased buffer in place), re-emits the DomCheck `V`
+       record for those nodes and diffs it against the oracle line. Also serves as the
+       mutation-test rig (see the S2-geometry report). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>S2GeomCheck</RootNamespace>
+    <AssemblyName>S2GeomCheck</AssemblyName>
+    <RollForward>LatestMajor</RollForward>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <BaseOutputPath>bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

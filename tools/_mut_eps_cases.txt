@@ -1,0 +1,7 @@
+M_color_default	src/Ufbx/Parse/SceneUpdate.cs	(layer.Props, UfbxiStrings.Color, (double)0.8f, (double)0.8f, (double)0.8f)	(layer.Props, UfbxiStrings.Color, 0.8, 0.8, 0.8)
+M_fps_ntsc	src/Ufbx/Parse/SceneUpdate.cs	(double)29.97f,  // UFBX_TIME_MODE_NTSC_DROP_FRAME	29.97,  // UFBX_TIME_MODE_NTSC_DROP_FRAME
+M_fps_full	src/Ufbx/Parse/SceneUpdate.cs	(double)29.97f,  // UFBX_TIME_MODE_NTSC_FULL_FRAME	29.97,  // UFBX_TIME_MODE_NTSC_FULL_FRAME
+M_fps_film	src/Ufbx/Parse/SceneUpdate.cs	(double)23.976f, // UFBX_TIME_MODE_FILM_FULL_FRAME	23.976, // UFBX_TIME_MODE_FILM_FULL_FRAME
+M_fps_5994	src/Ufbx/Parse/SceneUpdate.cs	(double)59.94f,  // UFBX_TIME_MODE_59_94_FPS	59.94,  // UFBX_TIME_MODE_59_94_FPS
+M_layerw_build	src/Ufbx/Parse/SceneUpdate.cs	layer.Weight > (double)0.99999f	layer.Weight > 0.99999
+M_layerw_eval	src/Ufbx/Parse/Evaluate.cs	weight > (double)0.99999f	weight > 0.99999

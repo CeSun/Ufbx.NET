@@ -1,0 +1,62 @@
+# Batch L mutation cases, tab-separated `tag<TAB>path<TAB>old<TAB>new` (each `old` must occur
+# exactly once in the file). Run with:
+#   cd tools && while IFS=$'\t' read -r tag path old new; do case "$tag" in ''|\#*) continue;; esac; \
+#       bash _mut_stream.sh "$tag" "$path" "$old" "$new"; done < _mut_stream_cases.txt 2>&1 | tee _mut_stream_sweep_L.txt
+# Expected outcomes: C_* (correctness) must bite (mismatches > 0 or a build/runtime break);
+# Q_* are equivalence controls that must stay inert and are then classified as
+# equivalent-by-construction (or as masked-by-another-rule) in the report.
+# Every case restores from tools/_scratch/*.bak and proves byte equality with `cmp`.
+#
+# -- ufbxi_end_file_context / the "Failed to open file" default (ufbx.c:6960-6975)
+C_endfc_noclr	src/Ufbx/Parse/StreamOpen.cs	                UfbxiPrint.ClearError(pError);	                if (false) UfbxiPrint.ClearError(pError);
+C_endfc_ok_false	src/Ufbx/Parse/StreamOpen.cs	            fc.End(pError, true);	            fc.End(pError, false);
+# Renamed C_* -> Q_* after the first sweep: `ufbxi_fix_error_type()` only substitutes the default
+# when `fc->error.description` is still unset, and BOTH ufbxi_fopen() failure sites set one
+# ("File not found" / "Invalid UTF-8") before ufbxi_end_file_context() runs, so the default is
+# unreachable through the open ABI on this surface. C_fopen_nodesc below makes it reachable.
+Q_endfc_defstr	src/Ufbx/Parse/StreamOpen.cs	UfbxiPrint.FixErrorType(Error, "Failed to open file", pError);	UfbxiPrint.FixErrorType(Error, "Failed to open file!", pError);
+Q_endfc_nullerr	src/Ufbx/Parse/StreamOpen.cs	            fc.End(pError, true);	            fc.End(null, true);
+#
+# -- ufbxi_fopen(): the lax UTF-8 decoder, the two error sites, the NUL-truncating _wfopen_s
+C_utf8_desc	src/Ufbx/Parse/StreamOpen.cs	UfbxiPrint.FailImpErr(fc.Error, "$" + "Invalid UTF-8" + "\0" + "file",	UfbxiPrint.FailImpErr(fc.Error, "$" + "Invalid UTF-7" + "\0" + "file",
+C_utf8_info	src/Ufbx/Parse/StreamOpen.cs	UfbxiPrint.FailImpErr(fc.Error, "$" + "Invalid UTF-8" + "\0" + "file",	UfbxiPrint.SetErrInfo(fc.Error, UfbxiRawStr.ToBytes(path, 0, pathLen), 0, pathLen); UfbxiPrint.FailImpErr(fc.Error, "$" + "Invalid UTF-8" + "\0" + "file",
+C_fopen_noinfo	src/Ufbx/Parse/StreamOpen.cs	                UfbxiPrint.SetErrInfo(fc.Error, UfbxiRawStr.ToBytes(path, 0, pathLen), 0, pathLen);	                if (false) UfbxiPrint.SetErrInfo(fc.Error, UfbxiRawStr.ToBytes(path, 0, pathLen), 0, pathLen);
+# Strips the `$` prefix from the "File not found" report, i.e. C's plain `ufbxi_fail_no_msg()`:
+# no description is written, so ufbxi_end_file_context()'s default becomes reachable and the
+# reported error must turn into UNKNOWN + "Failed to open file" instead of FILE_NOT_FOUND.
+C_fopen_nodesc	src/Ufbx/Parse/StreamOpen.cs	UfbxiPrint.FailImpErr(fc.Error, "$" + "File not found" + "\0" + "file",	UfbxiPrint.FailImpErr(fc.Error, "\0" + "file",
+C_nul_trunc_off	src/Ufbx/Parse/StreamOpen.cs	            if (nul >= 0) utf16 = utf16.Substring(0, nul);	            if (false) utf16 = utf16.Substring(0, nul);
+Q_strlen_resolution	src/Ufbx/Parse/StreamOpen.cs	                length = nul < 0 ? path.Length : nul;	                length = path.Length;
+Q_nulterm_ignored	src/Ufbx/Parse/StreamOpen.cs	            opened = StdioOpen(fc, path, length, opts != null && opts.FilenameNullTerminated);	            opened = StdioOpen(fc, path, length, false);
+#
+# -- ufbx_open_memory(): no_copy aliasing and close_cb (ufbx.c:30450-30503)
+C_nocopy_off	src/Ufbx/Parse/StreamOpen.cs	            bool noCopy = opts != null && opts.NoCopy;	            bool noCopy = false;
+C_nocopy_on	src/Ufbx/Parse/StreamOpen.cs	            bool noCopy = opts != null && opts.NoCopy;	            bool noCopy = true;
+C_close_cb_drop	src/Ufbx/Parse/StreamOpen.cs	            UfbxCloseMemoryCb closeCb = opts != null ? opts.CloseCb : null;	            UfbxCloseMemoryCb closeCb = null;
+#
+# -- ufbx_default_open_file(): unconditional info deref, NULL opts + NULL error (ufbx.c:30414-30418)
+Q_ctx_ignored	src/Ufbx/Parse/StreamOpen.cs	            return OpenFileCtx(out stream, info.Context, path, pathLen, null, null);	            return OpenFileCtx(out stream, (nint) 0, path, pathLen, null, null);
+#
+# -- the built-in streams (Parse/InputStreams.cs)
+C_mem_read_short	src/Ufbx/Parse/InputStreams.cs	            return toRead;	            return toRead > 0 ? toRead - 1 : 0;
+C_mem_skip_fail	src/Ufbx/Parse/InputStreams.cs	            if (size - position < skipSize) return false;	            if (true) return false;
+C_mem_size_zero	src/Ufbx/Parse/InputStreams.cs	            return (ulong)size;	            return (ulong)0;
+C_file_size_total	src/Ufbx/Parse/InputStreams.cs	                if (begin < end) return (ulong)(end - begin);	                if (begin < end) return (ulong)end;
+C_file_owns_handle	src/Ufbx/Parse/InputStreams.cs	            this.ownsFile = ownsHandle;	            this.ownsFile = true;
+#
+# -- the loader: progress wiring, the deferred open, the close tail (Parse/Load.cs)
+C_progress_unwired	src/Ufbx/Parse/Load.cs	            uc.Stream.ProgressCb = uc.Opts.ProgressCb;	            uc.Stream.ProgressCb = null;
+C_progress_interval	src/Ufbx/Parse/Load.cs	                progressInterval = 0x4000;	                progressInterval = 0x1000;
+C_deferred_pathlen	src/Ufbx/Parse/Load.cs	                        filenameLen, info) && opened.Attached;	                        filename.Length, info) && opened.Attached;
+C_deferred_noinfo	src/Ufbx/Parse/Load.cs	                        UfbxiPrint.SetErrInfo(uc.Error, UfbxiRawStr.ToBytes(filename, 0, filenameLen), 0, filenameLen);	                        UfbxiPrint.SetErrInfo(uc.Error, UfbxiRawStr.ToBytes(filename, 0, filenameLen), 0, 0);
+C_deferred_nodesc	src/Ufbx/Parse/Load.cs	                    UfbxiFail.FailMsg("open_file_fn()", "File not found");	                    UfbxiFail.FailNoDesc("open_file_fn()");
+C_close_tail_off	src/Ufbx/Parse/Load.cs	                    uc.Stream.Input.Close();	                    if (false) uc.Stream.Input.Close();
+#
+# -- ufbxi_ascii_refill(): an IO error is EOF, not a failure (ufbx.c:9437)
+C_ascii_io_throw	src/Ufbx/Parse/Ascii.cs	                        Ctx.Error.Description = "IO error";	                        throw new UfbxParseError("IO error", true);
+Q_ascii_io_nodesc	src/Ufbx/Parse/Ascii.cs	                    if (Ctx != null && Ctx.Error != null && string.IsNullOrEmpty(Ctx.Error.Description)) {	                    if (false) {
+#
+# -- the stdio entry points (Api/UfbxApi.cs)
+C_stdio_null_touch	src/Ufbx/Api/UfbxApi.cs	            if (file == null) return null;	            if (file == null) { if (error != null) error.Type = UfbxErrorType.FileNotFound; return null; }
+C_stdio_close_owned	src/Ufbx/Api/UfbxApi.cs	            UfbxInputStream stream = new UfbxFileInputStream(file, false);	            UfbxInputStream stream = new UfbxFileInputStream(file, true);
+C_prefix_total	src/Ufbx/Api/UfbxApi.cs	                uc.Stream.Buffer = prefix;	                uc.Stream.Buffer = prefix; uc.Stream.ProgressBytesTotal = (ulong)prefixSize;

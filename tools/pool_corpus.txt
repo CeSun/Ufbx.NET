@@ -1,0 +1,31 @@
+# Batch M thread-pool corpus: a slice of the ufbx `data/` tree chosen so that a load really
+# produces **task-pool work** on both sides, in argv order of pool_oracle.exe.
+#
+# Deliberate properties (the task producers are `ufbxi_deflate_task_fn`, binary only, and
+# `ufbxi_ascii_array_task_fn`, ASCII only):
+#   * fi 0/1/2/3 -- binary FBX with DEFLATE-compressed arrays crossing
+#     `UFBXI_MIN_THREADED_DEFLATE_BYTES` (256, ufbx.c:60), so once `uc->parse_threaded` is set the
+#     binary reader really hands work to the ring (ufbx.c:9090-9131). Small corpus files do NOT:
+#     `blender_279_default_7400_binary.fbx` (25k), `blender_272_cube_7400_binary.fbx` (11k) and
+#     `maya_constraint_zoo_7500_binary.fbx` (41k) create zero tasks, which is itself part of what
+#     the diff pins (no run_fn call at all).
+#   * fi 4/5 -- ASCII FBX whose `*N { ... }` arrays cross `UFBXI_MIN_THREADED_ASCII_VALUES`
+#     (64, ufbx.c:61), i.e. the second producer fires (ufbx.c:10565-10657).
+#   * fi 6 -- a pre-7000 ASCII file: no `*N {}` post-7000 arrays at all, so no tasks even though
+#     the whole file goes through the threaded walker; together with fi 0-3 this pins *when* the
+#     ring stays empty.
+#   * fi 7 -- the non-ASCII filename, to keep the corpus loader's raw-byte convention honest.
+#   * Sizes straddle the `max_tasks` batch bound at ufbx.c:15191-15193
+#     (`num_tasks / UFBX_THREAD_GROUP_COUNT`): fi 1 (~600k) has hundreds of tasks, fi 3 (~25k)
+#     only a handful, so the small `num_tasks` variants see several batches for one and a single
+#     batch for the other.
+#
+# Paths are relative to C:/Workspace/_analyze_ufbx (the oracle's cwd).
+data/maya_slime_7500_binary.fbx
+data/blender_293_barbarian_7400_binary.fbx
+data/maya_human_ik_6100_binary.fbx
+data/blender_279_default_7400_binary.fbx
+data/maya_slime_7500_ascii.fbx
+data/maya_advanced_skinned_pivot_7700_ascii.fbx
+data/blender_279_default_6100_ascii.fbx
+data/synthetic_aβカ😂_7500_ascii.fbx

@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Isolated verifier for the ported ASCII tokenizer / array element parsers, compiled
+       against the GENUINE Parse/Stream.cs, Parse/InputStreams.cs and Parse/UfbxiContext.cs
+       (no test-local stand-ins). The dependency closure mirrors src/Ufbx/Ufbx.csproj for the
+       files the ASCII path actually runs on: the real UfbxiStream windowing + retain-refill +
+       progress path, the real UfbxiContext (string pool / tmp_stack / exporter / double-parse
+       flags) and the bit-exact string pool from Util/. Files owned by concurrent workers that
+       the ASCII path does not need (Parse/{BitStream,Huff,Inflate,BinaryArray,UfbxiParseState})
+       are deliberately excluded so this verifier stays buildable while those are in flight.
+       Parse/PropTypeName.cs is included because UfbxiContext.cs declares a map over it.
+       Not part of ufbx-cs.sln. Same isolation trick as tools/UtilCheck. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>UfbxTests</RootNamespace>
+    <RollForward>LatestMajor</RollForward>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <NoWarn>CS0168;CS0219;CS0414</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\Enums.cs" />
+    <Compile Include="..\..\src\Ufbx\Math\Types.cs" />
+    <Compile Include="..\..\src\Ufbx\Math\UfbxBitUtil.cs" />
+    <Compile Include="..\..\src\Ufbx\Math\UfbxFma.cs" />
+    <Compile Include="..\..\src\Ufbx\Math\UfbxMath.cs" />
+    <Compile Include="..\..\src\Ufbx\Model\**\*.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\Hash.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\Map.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\Print.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\Sort.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\StringPool.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\Utf8.cs" />
+    <Compile Include="..\..\src\Ufbx\Util\Warnings.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\Error.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\UfbxiNode.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\PropTypeName.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\UfbxiStrings.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\Numeric.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\Stream.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\InputStreams.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\UfbxiContext.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\AsciiState.cs" />
+    <!-- Batch M: `UfbxiContext.ThreadPool` names this type even when no pool is ever built. -->
+    <Compile Include="..\..\src\Ufbx\Parse\ThreadPool.cs" />
+    <Compile Include="..\..\src\Ufbx\Parse\Ascii.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

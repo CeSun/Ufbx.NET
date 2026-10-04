@@ -1,0 +1,53 @@
+# Batch O corpus: chosen from tools/_scratch/_pivot_probe.txt, which reports for every
+# data/*.fbx how many nodes have a non-zero RotationPivot / ScalingPivot / ScalingOffset,
+# how many have RotationPivot != ScalingPivot, how many EMPTY nodes carry a pivot, how many
+# skinned nodes carry one, how many nodes are instanced, and how many have a geometry transform.
+# Columns of that file: nodes rpNz spNz soNz rotNeScl emptyPivot skinnedPivot instanced geoTrans
+#
+#   9 4 4 2 2 0 0 0 0   maya_zero_scale_pivot_*   <- Lcl Scaling with zero components: the
+#                                                    ufbxi_pivot_div epsilon branch (ufbx.c:18098)
+#   4 3 3 0 0 0 0 2 0   maya_instanced_pivots     <- instance_counts > 1, the only way
+#                                                    MODIFY_GEOMETRY_NO_FALLBACK can veto
+#   4 3 3 0 3 0 0 0 0   maya_child_pivots         <- child_offset accumulated into children
+#   4 2 2 0 1 2 0 0 0   maya_null_pivots          <- EMPTY nodes with pivots: the only way
+#                                                    pivot_handling_retain_empties is observable
+#  17 2 2 0 0 0 1 0 0   maya_slime                <- skinned node with a pivot: has_skin_deformer
+#                                                    forces can_modify_geometry_transform = false
+#   2 1 0 0 1 0 0 0 0   maya_anim_pivot_rotate    <- rotation pivot only (scaling pivot stays 0)
+#   3 1 1 1 1 0 0 0 0   maya_split_pivot          <- non-zero ScalingOffset
+#   5 1 1 3 1 0 0 0 0   maya_pivot_offset         <- three nodes with ScalingOffset
+#   5 1 1 0 0 0 1 0 0   maya_advanced_skinned_pivot
+#   2 1 1 0 0 0 0 0 1   motionbuilder_pivot       <- pre-existing geometry transform
+#   3 1 1 0 0 0 0 0 0   maya_equal_pivot          <- RotationPivot == ScalingPivot, so
+#                                                    ADJUST_TO_PIVOT's can_modify_pivot stays true
+#   4 1 1 0 0 0 1 0 0   maya_skinned_pivot        <- another skinned+pivot shape
+#   2 1 1 0 1 0 0 0 0   maya_pivots_7500          <- plain pivot pair
+#   0 0 0 0 0 0 0 0 0   blender_279_default       <- NEGATIVE CONTROL: no pivots at all, so a
+#                                                    "which nodes does the block touch" predicate
+#                                                    that is too eager shows up here first
+data/maya_zero_scale_pivot_6100_ascii.fbx
+data/maya_zero_scale_pivot_7700_binary.fbx
+data/maya_instanced_pivots_7700_ascii.fbx
+data/maya_child_pivots_7700_ascii.fbx
+data/maya_child_pivots_6100_ascii.fbx
+data/maya_null_pivots_7700_ascii.fbx
+data/maya_null_pivots_6100_binary.fbx
+data/maya_slime_7500_binary.fbx
+data/maya_anim_pivot_rotate_7700_ascii.fbx
+data/maya_split_pivot_7700_ascii.fbx
+data/maya_pivot_offset_7700_binary.fbx
+data/maya_advanced_skinned_pivot_7700_binary.fbx
+data/motionbuilder_pivot_7700_ascii.fbx
+data/maya_equal_pivot_7700_ascii.fbx
+data/maya_skinned_pivot_7700_ascii.fbx
+data/maya_pivots_7500_ascii.fbx
+data/blender_279_default_7400_binary.fbx
+
+# Batch R synthetic (batch O corpus gap, see PORTING_NOTES 规则 16): the ONLY known FBX with a
+# RotationPivot strictly inside (0, 0.0009765625) -- 0.0005 -- which makes `ufbxi_is_vec3_zero()`
+# (exact, gates ADJUST_TO_PIVOT) and `ufbxi_pivot_nonzero()` (|x| >= 0.0009765625, gates
+# ADJUST_TO_ROTATION_PIVOT) disagree. The same node has |rp - sp|_1 = 0.0005, i.e. inside
+# (0, pivot_epsilon], the boundary ufbx.c:18374 tests and no real file reaches.
+# NOTE: absolute path on purpose -- C:/Workspace/_analyze_ufbx is a read-only shared reference
+# tree, so synthetic corpus files cannot live in its data/ directory.
+C:/Workspace/ufbx-cs/tools/synth/synth_pivot_epsilon_7700_ascii.fbx

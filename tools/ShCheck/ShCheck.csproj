@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Isolated verification for batch P (scale helper nodes).
+       Not part of ufbx-cs.sln. Replays the record stream of tools/sh_oracle.c (built with zig,
+       #include "ufbx.c") through src/Ufbx/Parse/SceneBuild.cs:605-668 (the scale-helper creation
+       loop), src/Ufbx/Parse/Evaluate.cs (ufbx.c:22969-22979) and src/Ufbx/Parse/Bake.cs:757-777 /
+       825-845 (scale_helper_t / scale_helper_s), and compares every record of the grammar
+       documented in the oracle header. Also serves as the mutation rig. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>ShCheck</RootNamespace>
+    <AssemblyName>ShCheck</AssemblyName>
+    <RollForward>LatestMajor</RollForward>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <BaseOutputPath>bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+    <NoWarn>CS0168;CS0219;CS0414</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="..\..\tests\Ufbx.Tests\HashScene.cs" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

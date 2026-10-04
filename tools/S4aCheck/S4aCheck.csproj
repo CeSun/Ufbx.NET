@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Isolated verification for the S4a geometry-cache / external-file / axes-unit / skinning
+       module. Not part of ufbx-cs.sln. Drives the ported cache loader + skinning helpers directly
+       over the input/answer corpus of tools/s4a_oracle.c (built with zig, #include "ufbx.c").
+       Also serves as the mutation-test rig (see the S4a report). -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>S4aCheck</RootNamespace>
+    <AssemblyName>S4aCheck</AssemblyName>
+    <RollForward>LatestMajor</RollForward>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <BaseOutputPath>bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+</Project>

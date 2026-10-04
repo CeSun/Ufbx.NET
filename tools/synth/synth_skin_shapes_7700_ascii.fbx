@@ -1,0 +1,196 @@
+; FBX 7.7.0 project file
+; ----------------------------------------------------
+; SYNTHETIC (batch R). Not produced by any DCC tool.
+;
+; WHY: `data/*.fbx` (690 files) contains no mesh with more than one skin deformer, and no mesh
+; with zero vertices that still carries a deformer. Both are load-bearing in
+; `ufbxi_evaluate_skinning()` (ufbx.c:25063-...):
+;   * ufbx.c:25079 `if (mesh->num_vertices == 0) continue;`   -- needs a 0-vertex mesh that got
+;     past the deformer test on the line above.
+;   * ufbx.c:25126-25127 `// TODO: What should we do about multiple skins??`
+;     `ufbx_skin_deformer *skin = mesh->skin_deformers.data[0];` -- only discriminable if some
+;     mesh has >= 2 skin deformers.
+;
+; This file carries both shapes:
+;   Geometry::TwoSkins  -- 4 vertices, TWO Deformer::Skin objects (SkinA / SkinB)
+;   Geometry::EmptySkin -- 0 vertices, ONE Deformer::Skin
+
+FBXHeaderExtension:  {
+	FBXHeaderVersion: 1004
+	FBXVersion: 7700
+	Creator: "ufbx-cs batch R synthetic"
+}
+GlobalSettings:  {
+	Version: 1000
+	Properties70:  {
+		P: "UpAxis", "int", "Integer", "",1
+		P: "UpAxisSign", "int", "Integer", "",1
+		P: "FrontAxis", "int", "Integer", "",2
+		P: "FrontAxisSign", "int", "Integer", "",1
+		P: "CoordAxis", "int", "Integer", "",0
+		P: "CoordAxisSign", "int", "Integer", "",1
+		P: "UnitScaleFactor", "double", "Number", "",1
+		P: "OriginalUnitScaleFactor", "double", "Number", "",1
+	}
+}
+Definitions:  {
+	Version: 100
+	Count: 5
+	ObjectType: "GlobalSettings" { Count: 1 }
+	ObjectType: "Model" { Count: 5 }
+	ObjectType: "Geometry" { Count: 2 }
+	ObjectType: "Deformer" { Count: 5 }
+	ObjectType: "Pose" { Count: 0 }
+}
+Objects:  {
+	Geometry: 200000, "Geometry::TwoSkins", "Mesh" {
+		Vertices: *12 {
+			a: 0,0,0, 1,0,0, 1,1,0, 0,1,0
+		}
+		PolygonVertexIndex: *4 {
+			a: 0,1,2,-4
+		}
+		GeometryVersion: 124
+		LayerElementNormal: 0 { }
+		LayerElementUV: 0 { }
+	}
+	Geometry: 200001, "Geometry::EmptySkin", "Mesh" {
+		Vertices: *0 {
+			a:
+		}
+		PolygonVertexIndex: *0 {
+			a:
+		}
+		GeometryVersion: 124
+	}
+	Model: 100000, "Model::Root", "Null" {
+		Version: 232
+		Properties70:  {
+			P: "Lcl Translation", "Lcl Translation", "", "A",0,0,0
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+		}
+	}
+	Model: 100001, "Model::BoneA", "Null" {
+		Version: 232
+		Properties70:  {
+			P: "Lcl Translation", "Lcl Translation", "", "A",0,0,0
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+		}
+	}
+	Model: 100002, "Model::BoneB", "Null" {
+		Version: 232
+		Properties70:  {
+			; Deliberately NOT the same place as BoneA: with two skins on one mesh, taking
+			; `skin_deformers.data[0]` vs `.data[1]` must produce different vertices, otherwise
+			; the "TODO: multiple skins" site (ufbx.c:25127) stays unobservable.
+			P: "Lcl Translation", "Lcl Translation", "", "A",0,5,0
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+		}
+	}
+	Model: 100003, "Model::TwoSkins", "Mesh" {
+		Version: 232
+		Properties70:  {
+			P: "Lcl Translation", "Lcl Translation", "", "A",0,0,0
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+		}
+	}
+	Model: 100004, "Model::EmptySkin", "Mesh" {
+		Version: 232
+		Properties70:  {
+			P: "Lcl Translation", "Lcl Translation", "", "A",0,0,0
+			P: "Lcl Rotation", "Lcl Rotation", "", "A",0,0,0
+			P: "Lcl Scaling", "Lcl Scaling", "", "A",1,1,1
+		}
+	}
+	Deformer: 300000, "Deformer::SkinA", "Skin" {
+		Version: 101
+		Link_Version: 1
+	}
+	Deformer: 300001, "Deformer::SkinB", "Skin" {
+		Version: 101
+		Link_Version: 1
+	}
+	Deformer: 300002, "Deformer::SkinEmpty", "Skin" {
+		Version: 101
+		Link_Version: 1
+	}
+	Deformer: 400000, "SubDeformer::ClusterA", "Cluster" {
+		Version: 100
+		UserData: "", ""
+		Indexes: *4 {
+			a: 0,1,2,3
+		}
+		Weights: *4 {
+			a: 1,1,1,1
+		}
+		Transform: *16 {
+			a: 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+		}
+		TransformLink: *16 {
+			a: 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+		}
+	}
+	Deformer: 400001, "SubDeformer::ClusterB", "Cluster" {
+		Version: 100
+		UserData: "", ""
+		Indexes: *4 {
+			a: 0,1,2,3
+		}
+		Weights: *4 {
+			a: 1,1,1,1
+		}
+		Transform: *16 {
+			a: 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+		}
+		TransformLink: *16 {
+			a: 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+		}
+	}
+	Deformer: 400002, "SubDeformer::ClusterEmpty", "Cluster" {
+		Version: 100
+		UserData: "", ""
+		Indexes: *1 {
+			a: 0
+		}
+		Weights: *1 {
+			a: 1
+		}
+		Transform: *16 {
+			a: 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+		}
+		TransformLink: *16 {
+			a: 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1
+		}
+	}
+}
+Connections:  {
+	; Model hierarchy
+	C: "OO",100001,100000
+	C: "OO",100002,100000
+	C: "OO",100003,100000
+	C: "OO",100004,100000
+
+	; Geometry -> Model
+	C: "OO",200000,100003
+	C: "OO",200001,100004
+
+	; Skin deformers -> the GEOMETRIES (that is how every real exporter connects them; a
+	; Deformer:: whose parent is the Model does not resolve). TwoSkins gets TWO on purpose.
+	C: "OO",300000,200000
+	C: "OO",300001,200000
+	C: "OO",300002,200001
+
+	; Clusters -> skins
+	C: "OO",400000,300000
+	C: "OO",400001,300001
+	C: "OO",400002,300002
+
+	; Bones -> clusters
+	C: "OO",100001,400000
+	C: "OO",100002,400001
+	C: "OO",100001,400002
+}

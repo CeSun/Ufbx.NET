@@ -1,0 +1,32 @@
+# Batch K mutation cases, tab-separated `tag<TAB>path<TAB>old<TAB>new` (each `old` must occur
+# exactly once in the file). Run with:
+#   cd tools && while IFS=$'\t' read -r tag path old new; do case "$tag" in ''|\#*) continue;; esac; \
+#       bash _mut_createanim.sh "$tag" "$path" "$old" "$new"; done < _mut_ca_cases.txt 2>&1 | tee _mut_ca_sweep_K.txt
+# Expected outcomes: C_* (correctness) must bite; Q_* are equivalence controls that must stay inert
+# and are then classified as equivalent-by-construction in the report.
+C_utf8_nodesc	src/Ufbx/Parse/CreateAnim.cs	UfbxiFail.CheckMsg(validLength == length, "Invalid UTF-8");	UfbxiFail.CheckNoDesc(validLength == length, "Invalid UTF-8");
+C_utf8_skipped	src/Ufbx/Parse/CreateAnim.cs	if (length > 0) {	if (length > 0 && false) {
+C_name_swap	src/Ufbx/Parse/CreateAnim.cs	return UfbxiStr.Less(a.PropName, b.PropName);	return UfbxiStr.Less(b.PropName, a.PropName);
+C_elem_swap	src/Ufbx/Parse/CreateAnim.cs	if (a.ElementId != b.ElementId) return a.ElementId < b.ElementId;	if (a.ElementId != b.ElementId) return b.ElementId < a.ElementId;
+C_xform_swap	src/Ufbx/Parse/CreateAnim.cs	return a.NodeId < b.NodeId;	return b.NodeId < a.NodeId;
+C_xform_le	src/Ufbx/Parse/CreateAnim.cs	return a.NodeId < b.NodeId;	return a.NodeId <= b.NodeId;
+C_fill_drop	src/Ufbx/Parse/CreateAnim.cs	} else if (over.ValueInt != 0 && over.Value.X == 0.0f) {	} else if (false) {
+C_fill_trunc	src/Ufbx/Parse/CreateAnim.cs	over.ValueInt = (long)over.Value.X;	over.ValueInt = (long)(float)over.Value.X;
+C_layer_nodesc	src/Ufbx/Parse/CreateAnim.cs	UfbxiFail.CheckMsg(index < (uint)sceneLayers.Length, "layer_ids out of bounds");	UfbxiFail.CheckNoDesc(index < (uint)sceneLayers.Length, "layer_ids out of bounds");
+C_layer_off	src/Ufbx/Parse/CreateAnim.cs	layers[i] = sceneLayers[index];	layers[i] = sceneLayers[index == 0 ? 0 : index - 1];
+C_w_copy_short	src/Ufbx/Parse/CreateAnim.cs	Array.Copy(weights, 0, dst, 0, numLayers);	Array.Copy(weights, 0, dst, 0, numLayers - 1);
+C_w_check_ge	src/Ufbx/Parse/CreateAnim.cs	UfbxiFail.CheckMsg(weights.Length == numLayers,	UfbxiFail.CheckMsg(weights.Length >= numLayers,
+C_dup_content	src/Ufbx/Parse/CreateAnim.cs	if (prev.ElementId == next.ElementId && ReferenceEquals(prev.PropName, next.PropName)) {	if (prev.ElementId == next.ElementId && UfbxiStr.Equal(prev.PropName, next.PropName)) {
+C_dup_off	src/Ufbx/Parse/CreateAnim.cs	if (prev.ElementId == next.ElementId && ReferenceEquals(prev.PropName, next.PropName)) {	if (false) {
+C_key_zero	src/Ufbx/Parse/CreateAnim.cs	over.InternalKey = UfbxiProperties.GetNameKey(over.PropName, over.PropName.Length);	over.InternalKey = 0;
+C_custom_off	src/Ufbx/Parse/CreateAnim.cs	anim.Custom = true;	anim.Custom = false;
+C_ignore_off	src/Ufbx/Parse/CreateAnim.cs	anim.IgnoreConnections = ac.Opts.IgnoreConnections;	anim.IgnoreConnections = false;
+C_prev_off	src/Ufbx/Parse/CreateAnim.cs	if (UfbxiStr.Equal(over.PropName, prevName)) {	if (false) {
+C_intern_blind	src/Ufbx/Parse/CreateAnim.cs	if (globalIx < global.Length && UfbxiStr.Equal(global[globalIx], over.PropName)) {	if (globalIx < global.Length) {
+C_prev_init	src/Ufbx/Parse/CreateAnim.cs	string prevName = EmptyChar;	string prevName = "Lcl Translation";
+Q_strcmp_strless	src/Ufbx/Parse/CreateAnim.cs	return UfbxiStr.Cmp(a.PropName, b.PropName) < 0;	return UfbxiStr.Less(a.PropName, b.PropName);
+Q_empty_norm	src/Ufbx/Parse/CreateAnim.cs	string data = length != 0 ? src : EmptyChar;	string data = src;
+Q_w_copy_len	src/Ufbx/Parse/CreateAnim.cs	Array.Copy(weights, 0, dst, 0, numLayers);	Array.Copy(weights, 0, dst, 0, weights.Length);
+Q_layers_null	src/Ufbx/Parse/CreateAnim.cs	anim.Layers = layers;	anim.Layers = numLayers == 0 ? null : layers;
+Q_opts_alias	src/Ufbx/Parse/CreateAnim.cs	ac.Opts = CopyOpts(userOpts);	ac.Opts = userOpts;
+Q_intern_tail	src/Ufbx/Parse/CreateAnim.cs	while (globalIx < global.Length && UfbxiStr.Less(global[globalIx], over.PropName)) {	while (globalIx + 1 < global.Length && UfbxiStr.Less(global[globalIx], over.PropName)) {

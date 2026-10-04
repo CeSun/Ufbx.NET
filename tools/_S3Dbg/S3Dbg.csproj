@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <RootNamespace>S3Dbg</RootNamespace>
+    <AssemblyName>S3Dbg</AssemblyName>
+    <RollForward>LatestMajor</RollForward>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\**\*.cs" Exclude="..\..\src\Ufbx\bin\**;..\..\src\Ufbx\obj\**;..\..\src\Ufbx\_quarantine\**" />
+    <Compile Include="Program.cs" />
+    <Compile Include="HashSceneTrace.cs" />
+  </ItemGroup>
+</Project>

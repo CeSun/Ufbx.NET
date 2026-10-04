@@ -1,0 +1,17 @@
+# 字节保真优先：所有文件按原样入库 / 检出，不做任何行尾转换。
+#
+# 原因：tools/_mut_*.sh 是对端口源码做**字节级**搜索替换来打变异，再用 `cmp` 证明
+# 逐字节还原。一旦 Git 在入库或检出时改了 CRLF/LF，脚本里的锚点就再也匹配不上，
+# 整套变异对照会静默失灵（历史教训见 PORTING_NOTES.md 规则 18：perl 从 PATH 上消失
+# 时，批 J/K 的变异就曾这样静默失效过）。
+* -text
+
+# 唯一例外：shell 脚本必须保持 LF，否则 bash 会把残留的 \r 当成命令名的一部分。
+*.sh text eol=lf
+
+# 二进制素材按二进制处理。
+*.fbx binary
+*.mc binary
+*.mcx binary
+*.png binary
+*.zip binary

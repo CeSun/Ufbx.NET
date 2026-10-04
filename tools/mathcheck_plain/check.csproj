@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <RollForward>LatestMajor</RollForward>
+    <Nullable>disable</Nullable>
+    <RootNamespace>Check</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\Ufbx\Math\UfbxMath.cs" Link="UfbxMath.cs" />
+    <Compile Include="..\..\src\Ufbx\Math\UfbxFma.cs" Link="UfbxFma.cs" />
+    <Compile Include="..\..\src\Ufbx\Math\UfbxBitUtil.cs" Link="UfbxBitUtil.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,54 @@
+# Batch N mutation controls: tag <TAB> path <TAB> old <TAB> new
+#
+# `old` must occur exactly once in the file (the runner fails loudly otherwise). Every case is
+# applied, the skinning differential (`tools/SkinCheck`) is run, and the file is restored from
+# tools/_scratch/<basename>.bak and `cmp`-proved byte-identical afterwards.
+#
+# `C_` = expected to bite (the differential must see the change), `Q_` = expected inert by
+# construction (a control: if a `Q_` bites, the harness is stronger than claimed and the
+# classification below is wrong).
+#
+# Classification notes (written BEFORE running; corrected after measuring, see
+# tools/_mut_skin_sweep_N.txt and COORDINATION.md):
+#  - Q_eval_error_fresh: `ufbxi_evaluate_skinning()` only writes `error` on its own failure, and
+#    both of its call sites' failure tails are the arena OOM (PORTING_NOTES #4), unreachable here.
+#    So which `ufbx_error` object is passed is unobservable.
+#  - Q_topo_bigger / Q_skin_sentinel: capacity and the `result_pos[0]` sentinel slot that C creates
+#    with `ufbxi_push(num_vertices + 1); result_pos++` are never read back.
+#  - Q_blend_zero_guard: skipping the `weight == 0` early-out adds `offset * 0 * w`, which is 0 for
+#    every finite value; the corpus has no inf/nan blend offsets.
+#  - Q_blend_outer_weight: `ufbxi_evaluate_skinning` is the only caller that reaches
+#    `ufbx_add_blend_vertex_offsets` with a weight, and it passes exactly 1.0 (ufbx.c:25126).
+C_eval_no_skin	src/Ufbx/Parse/EvaluateScene.cs	if (ec.Opts.EvaluateSkinning) {	if (false) {
+C_eval_time_zero	src/Ufbx/Parse/EvaluateScene.cs	UfbxiSceneOpts.EvaluateSkinning(ec.Scene, ec.Error, ec.Time,	UfbxiSceneOpts.EvaluateSkinning(ec.Scene, ec.Error, 0.0,
+C_eval_caches_off	src/Ufbx/Parse/EvaluateScene.cs	ec.Opts.LoadExternalFiles && ec.Opts.EvaluateCaches, cacheOpts);	false, cacheOpts);
+C_eval_caches_on	src/Ufbx/Parse/EvaluateScene.cs	ec.Opts.LoadExternalFiles && ec.Opts.EvaluateCaches, cacheOpts);	true, cacheOpts);
+Q_eval_error_fresh	src/Ufbx/Parse/EvaluateScene.cs	UfbxiSceneOpts.EvaluateSkinning(ec.Scene, ec.Error, ec.Time,	UfbxiSceneOpts.EvaluateSkinning(ec.Scene, new UfbxError(), ec.Time,
+C_load_no_skin	src/Ufbx/Parse/Load.cs	if (uc.Opts.EvaluateSkinning) {	if (false) {
+C_skip_blend	src/Ufbx/Parse/SceneOpts.cs	AddBlendVertexOffsets(blend, resultPos, posBase, numVertices, 1.0);	AddBlendVertexOffsets(blend, resultPos, posBase, numVertices, 0.0);
+C_skip_skin	src/Ufbx/Parse/SceneOpts.cs	if (mesh.SkinDeformers.Length > 0) {	if (false) {
+C_islocal_true	src/Ufbx/Parse/SceneOpts.cs	mesh.SkinnedIsLocal = false;	mesh.SkinnedIsLocal = true;
+C_normals_skip	src/Ufbx/Parse/SceneOpts.cs	if (!cachedNormals) {	if (false) {
+C_unique_never	src/Ufbx/Parse/SceneOpts.cs	if (numNormals == mesh.NumVertices) {	if (false) {
+C_vreals4	src/Ufbx/Parse/SceneOpts.cs	skinnedNormal.ValueReals = 3;	skinnedNormal.ValueReals = 4;
+C_gennormals_false	src/Ufbx/Parse/SceneOpts.cs	mesh.GeneratedNormals = true;	mesh.GeneratedNormals = false;
+Q_topo_bigger	src/Ufbx/Parse/SceneOpts.cs	UfbxTopoEdge[] topo = new UfbxTopoEdge[maxSkinnedIndices];	UfbxTopoEdge[] topo = new UfbxTopoEdge[maxSkinnedIndices + 1];
+C_skin_last_not_first	src/Ufbx/Parse/SceneOpts.cs	UfbxSkinDeformer skin = mesh.SkinDeformers[0];	UfbxSkinDeformer skin = mesh.SkinDeformers[mesh.SkinDeformers.Length - 1];
+C_fallback_null	src/Ufbx/Parse/SceneOpts.cs	fallback = mesh.Instances[0].GeometryToWorld;	fallback = null;
+C_copy_short	src/Ufbx/Parse/SceneOpts.cs	Array.Copy(mesh.Vertices, 0, resultPos, posBase, numVertices);	Array.Copy(mesh.Vertices, 0, resultPos, posBase, numVertices - 1);
+C_slice_off1	src/Ufbx/Parse/SceneOpts.cs	resultSlice = Slice(resultPos, posBase, numVertices);	resultSlice = Slice(resultPos, 0, numVertices);
+C_cachednormals_true	src/Ufbx/Parse/SceneOpts.cs	bool cachedPosition = false, cachedNormals = false;	bool cachedPosition = false, cachedNormals = true;
+C_firstq0_identity	src/Ufbx/Parse/SceneOpts.cs	if (i == 0) firstQ0 = vq0;	if (i == 0) firstQ0 = new UfbxQuat(0.0, 0.0, 0.0, 1.0);
+C_dqdot_skip	src/Ufbx/Parse/SceneOpts.cs	if (UfbxQuat.Dot(firstQ0, vq0) < 0.0) {	if (false) {
+C_totalweight_zero	src/Ufbx/Parse/SceneOpts.cs	totalWeight += weight.Weight;	totalWeight += 0.0;
+C_nofallback	src/Ufbx/Parse/SceneOpts.cs	if (totalWeight <= 0.0) {	if (false) {
+C_nonorm	src/Ufbx/Parse/SceneOpts.cs	if (UfbxMath.Abs(totalWeight - 1.0) > UfbxMathConsts.Epsilon) {	if (false) {
+C_dq_blend_full	src/Ufbx/Parse/SceneOpts.cs	AddWeightedMat(ref mat, dqm, skinVertex.DqWeight);	AddWeightedMat(ref mat, dqm, 1.0);
+C_dq_replace	src/Ufbx/Parse/SceneOpts.cs	mat = dqm;	mat = UfbxMatrix.Identity;
+C_lerp_nodq	src/Ufbx/Parse/SceneOpts.cs	AddWeightedMat(ref mat, cluster.GeometryToWorld, (1.0 - skinVertex.DqWeight) * weight.Weight);	AddWeightedMat(ref mat, cluster.GeometryToWorld, weight.Weight);
+C_blend_last_vertex	src/Ufbx/Parse/SceneOpts.cs	if (index < numVertices) {	if (index < numVertices - 1) {
+Q_blend_zero_guard	src/Ufbx/Parse/SceneOpts.cs	if (weight == 0.0) return;	if (false) return;
+Q_blend_outer_weight	src/Ufbx/Parse/SceneOpts.cs	AddBlendShapeVertexOffsets(key.Shape, vertices, offset, numVertices, weight * key.EffectiveWeight);	AddBlendShapeVertexOffsets(key.Shape, vertices, offset, numVertices, key.EffectiveWeight);
+C_skin_zeroverts	src/Ufbx/Parse/SceneOpts.cs	if (mesh.NumVertices == 0) continue;	if (false) continue;
+C_skin_normal_smooth	src/Ufbx/Parse/SceneOpts.cs	UfbxTopology.GenerateNormalMapping(mesh, topo, numIndices, normalIndices, numIndices, false);	UfbxTopology.GenerateNormalMapping(mesh, topo, numIndices, normalIndices, numIndices, true);
+Q_skin_sentinel	src/Ufbx/Parse/SceneOpts.cs	resultPos[0] = default;	resultPos[0] = new UfbxVec3(1.0, 2.0, 3.0);

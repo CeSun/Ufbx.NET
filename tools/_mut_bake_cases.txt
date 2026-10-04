@@ -1,0 +1,22 @@
+# Batch J mutation cases, tab-separated `tag<TAB>path<TAB>old<TAB>new` (each `old` must occur
+# exactly once in the file). Run with:
+#   cd tools && while IFS=$'\t' read -r tag path old new; do case "$tag" in ''|\#*) continue;; esac; \
+#       bash _mut_bake.sh "$tag" "$path" "$old" "$new"; done < _mut_bake_cases.txt
+# H_* target the scale-helper machinery of ufbxi_bake_node_imp, which is only reachable when the
+# scene is loaded with inherit_mode_handling != PRESERVE (corpus modes 1..4).
+H_t_pick	src/Ufbx/Parse/Bake.cs	scaleHelperT = bc.TmpNodes[helperIx];	scaleHelperT = bc.TmpNodes[0];
+H_t_const	src/Ufbx/Parse/Bake.cs	constantScaleT = node.Parent.ScaleHelper.InheritScale;	constantScaleT = new UfbxVec3(1.0, 1.0, 1.0);
+H_t_resample	src/Ufbx/Parse/Bake.cs	if (!scaleHelperT.ConstantScale) {	if (scaleHelperT.ConstantScale) {
+H_t_push	src/Ufbx/Parse/Bake.cs	PushResampledTimes(bc, scaleHelperT.ScaleKeys);	/*skip*/
+H_s_pick	src/Ufbx/Parse/Bake.cs	scaleHelperS = bc.TmpNodes[helperIx];	scaleHelperS = bc.TmpNodes[0];
+H_s_resample	src/Ufbx/Parse/Bake.cs	if (!scaleHelperS.ConstantScale) {	if (scaleHelperS.ConstantScale) {
+H_s_push	src/Ufbx/Parse/Bake.cs	PushResampledTimes(bc, scaleHelperS.ScaleKeys);	/*skip*/
+H_s_const	src/Ufbx/Parse/Bake.cs	constantScaleS = inheritHelper.LocalTransform.Scale;	constantScaleS = new UfbxVec3(1.0, 1.0, 1.0);
+H_s_gate	src/Ufbx/Parse/Bake.cs	if (hasScaleHelperS) {	if (!hasScaleHelperS) {
+H_t_gate	src/Ufbx/Parse/Bake.cs	if (hasScaleHelperT) {	if (!hasScaleHelperT) {
+H_stack	src/Ufbx/Parse/Bake.cs	if (node.IsScaleHelper) {	if (!node.IsScaleHelper) {
+H_sibling_push	src/Ufbx/Parse/Bake.cs	bc.TmpBakeStack.Add(child.ElementId);	/*skip*/
+H_inherit_gate	src/Ufbx/Parse/Bake.cs	bc.NodesToBake[child.InheritScaleNode.ScaleHelper.TypedId]) {	!bc.NodesToBake[child.InheritScaleNode.ScaleHelper.TypedId]) {
+H_index_off	src/Ufbx/Parse/Bake.cs	bc.BakedNodeIndex[node.TypedId] = bc.TmpNodes.Count;	bc.BakedNodeIndex[node.TypedId] = bc.TmpNodes.Count + 1;
+H_flags_ish	src/Ufbx/Parse/Bake.cs	flags |= FlagIgnoreScaleHelper | FlagIgnoreComponentwiseScale | FlagExplicitIncludes;	flags |= FlagExplicitIncludes;
+H_no_extrap	src/Ufbx/Parse/Bake.cs	if ((bc.Opts.EvaluateFlags & EvaluateNoExtrapolation) != 0) {	if (false) {

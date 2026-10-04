@@ -1,0 +1,30 @@
+# Batch N corpus: chosen with tools/_scratch/_skin_probe.exe (see tools/_scratch/_skin_probe.txt),
+# which loads every data/*.fbx with the golden's own load options and reports
+#   <meshes> <skin deformers> <blend deformers> <cache deformers> <max verts> <max indices> <path>.
+# Every entry below has at least one deformer, and together they cover:
+#   skin only / blend only / skin+blend / cache deformer with external files,
+#   linear vs dual-quaternion skinning, half-skinned (some vertices with no weights),
+#   instanced meshes (the `instances.data[0]->geometry_to_world` fallback at ufbx.c:25128),
+#   ascii and binary, small and large vertex counts.
+data/blender_293_barbarian_7400_binary.fbx
+data/blender_293_half_skinned_7400_binary.fbx
+data/maya_blend_inbetween_7500_binary.fbx
+data/maya_cache_sine_7500_binary.fbx
+data/maya_dq_weights_7500_ascii.fbx
+data/maya_dq_weights_7500_binary.fbx
+data/maya_dual_quaternion_7500_ascii.fbx
+data/maya_game_sausage_7500_binary.fbx
+data/maya_instanced_skin_7700_binary.fbx
+data/maya_kenney_character_7700_binary.fbx
+data/maya_poses_7700_ascii.fbx
+data/maya_transformed_skin_7700_binary.fbx
+data/synthetic_bind_to_root_7700_ascii.fbx
+
+# Batch R synthetic (batch N corpus gap): the ONLY known FBX with (a) a mesh carrying TWO skin
+# deformers -- `ufbxi_evaluate_skinning` takes `skin_deformers.data[0]` with a
+# "TODO: What should we do about multiple skins??" (ufbx.c:25127) -- and (b) a mesh with a skin
+# deformer and ZERO vertices, which ufbx.c:25079 `if (mesh->num_vertices == 0) continue;` skips.
+# Neither shape exists anywhere in the 690 files of data/.
+# NOTE: absolute path on purpose -- C:/Workspace/_analyze_ufbx is a read-only shared reference
+# tree, so synthetic corpus files cannot live in its data/ directory.
+C:/Workspace/ufbx-cs/tools/synth/synth_skin_shapes_7700_ascii.fbx

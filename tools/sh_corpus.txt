@@ -1,0 +1,53 @@
+# Batch P corpus: scale helper nodes.
+#
+# Chosen by measurement (tools/_scratch/_sh_probe.c -> _sh_probe.txt), not by filename guessing.
+# Under `inherit_mode_handling = PRESERVE` (the golden default) NONE of the 690 `data/*.fbx`
+# files creates a scale helper, so the corpus is built from the files that DO create one under
+# HELPER_NODES / COMPENSATE, ordered by how much of the feature each one exercises.
+#
+#   helpers = number of nodes with is_scale_helper   (under HELPER_NODES)
+#   anim    = of those, how many have an animated "Lcl Scaling"
+#   bakeNC  = nodes hitting `!scale_helper_t->constant_scale` (ufbx.c:27285) when baked
+#
+#   nodes helpers anim bakeNC  file
+#     205      50   49      0  maya_human_ik_7400_binary.fbx      <- biggest helper set
+#     205      50   49      0  maya_human_ik_7400_ascii.fbx       <- ascii twin
+#     205      50    0      0  maya_human_ik_6100_binary.fbx      <- helpers, no animated scale
+#       9       3    3      2  maya_game_sausage_7500_binary_deform.fbx
+#       9       3    3      2  maya_game_sausage_7500_ascii_deform.fbx
+#       9       3    3      2  maya_game_sausage_6100_binary_deform.fbx
+#      11       3    3      1  maya_mixed_inherit_mode_7700_ascii.fbx
+#       9       3    3      0  maya_game_sausage_7500_binary_combined.fbx
+#       8       3    3      0  maya_anim_no_inherit_scale_7700_ascii.fbx
+#      17       3    2      0  motionbuilder_sausage_rrss_7700_binary.fbx
+#      19       2    2      0  maya_slime_7500_binary.fbx
+#       7       2    1      0  maya_scale_no_inherit_7700_ascii.fbx
+#       7       2    1      0  maya_scale_no_inherit_6100_ascii.fbx
+#       4       1    1      0  maya_scale_no_inherit_step_7700_ascii.fbx
+#       7       3    0      0  synthetic_geometry_transform_inherit_mode_7700_ascii.fbx
+#       7       2    0      0  maya_static_no_inherit_scale_7700_ascii.fbx
+#      21       1    0      0  maya_constraint_zoo_7500_binary.fbx
+#       6       1    0      0  maya_dual_quaternion_scale_7500_ascii.fbx
+#       0       0    0      0  blender_293_barbarian_7400_binary.fbx   <- negative control
+#       0       0    0      0  blender_279_default_7400_binary.fbx     <- negative control
+
+data/maya_human_ik_7400_binary.fbx
+data/maya_human_ik_7400_ascii.fbx
+data/maya_human_ik_6100_binary.fbx
+data/maya_game_sausage_7500_binary_deform.fbx
+data/maya_game_sausage_7500_ascii_deform.fbx
+data/maya_game_sausage_6100_binary_deform.fbx
+data/maya_mixed_inherit_mode_7700_ascii.fbx
+data/maya_game_sausage_7500_binary_combined.fbx
+data/maya_anim_no_inherit_scale_7700_ascii.fbx
+data/motionbuilder_sausage_rrss_7700_binary.fbx
+data/maya_slime_7500_binary.fbx
+data/maya_scale_no_inherit_7700_ascii.fbx
+data/maya_scale_no_inherit_6100_ascii.fbx
+data/maya_scale_no_inherit_step_7700_ascii.fbx
+data/synthetic_geometry_transform_inherit_mode_7700_ascii.fbx
+data/maya_static_no_inherit_scale_7700_ascii.fbx
+data/maya_constraint_zoo_7500_binary.fbx
+data/maya_dual_quaternion_scale_7500_ascii.fbx
+data/blender_293_barbarian_7400_binary.fbx
+data/blender_279_default_7400_binary.fbx

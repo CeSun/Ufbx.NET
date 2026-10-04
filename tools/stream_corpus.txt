@@ -1,0 +1,26 @@
+# Batch L stream/stdio/open corpus: a small slice of the ufbx `data/` tree spanning the load
+# formats and file sizes the differential needs, in argv order of stream_oracle.exe.
+#
+# Deliberate properties:
+#   * fi 0/1/5 -- binary + ascii FBX, 25k/80k/23k bytes: more than one 0x4000 read buffer, so
+#     `ufbxi_refill()` runs its multi-read loop and `ufbxi_skip_bytes()` really seeks.
+#   * fi 2/7 -- animated binaries (anim layers / shape weights), so a successful scene hash has
+#     something in it that a truncated read would break.
+#   * fi 3 -- `synthetic_aβカ😂_7500_ascii.fbx`: the ONLY non-ASCII path in the tree. Its filename
+#     is a UTF-8 byte string, which is exactly what `ufbxi_fopen()`'s lax UTF-8 -> UTF-16 decoder
+#     (ufbx.c:6996-7031) consumes; the port must be handed those raw bytes, not a decoded C#
+#     string (see the ReadCorpus() note in tools/LoadCheck/Program.cs).
+#   * fi 4 -- the smallest binary (11k), under one read buffer.
+#   * fi 6 -- a .obj, so `ufbx_load_stream()` also runs the obj/mtl format detection path.
+#   * fi 8 -- ascii with constraints, 41k.
+#
+# Paths are relative to C:/Workspace/_analyze_ufbx (the oracle's cwd).
+data/blender_279_default_7400_binary.fbx
+data/blender_279_default_6100_ascii.fbx
+data/maya_anim_layers_7500_binary.fbx
+data/synthetic_aβカ😂_7500_ascii.fbx
+data/blender_272_cube_7400_binary.fbx
+data/maya_advanced_skinned_pivot_7700_ascii.fbx
+data/blender440_shape_weight_anim_7400_binary.fbx
+data/blender_279_default.obj
+data/maya_constraint_zoo_7500_binary.fbx
