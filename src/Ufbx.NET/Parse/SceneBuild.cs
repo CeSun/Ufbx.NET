@@ -50,7 +50,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Ufbx
+namespace Ufbx.NET
 {
     // C: ufbxi_pre_connection (ufbx.c:18067-18069).
     internal struct UfbxiPreConnection
