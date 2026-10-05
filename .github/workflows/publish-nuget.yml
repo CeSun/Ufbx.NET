@@ -1,15 +1,18 @@
-# Ufbx.NET NuGet 发布流水线。
+# Ufbx.NET NuGet 发布流水线（nuget.org 可信发布，无需长期 API key secret）。
 #
 # 版本号由 MinVer 从 git 标签推导（配置见 src/Ufbx.NET/Ufbx.NET.csproj）：
 #   - 推送标签 v0.23.1        -> 包版本 0.23.1（正式版）
 #   - 标签之后的提交          -> 0.23.1-pre.N.M 之类的预发布版
 #   - 从未打标签              -> 0.23.0-alpha.0.N
 #
-# 发布正式版：
-#   git tag v0.23.1 && git push origin v0.23.1
+# 触发：推送 v* 标签，或在 Actions 页面手动 workflow_dispatch。
 #
-# 前置条件：仓库 Settings -> Secrets and variables -> Actions 里配置
-#   NUGET_API_KEY —— nuget.org 的 API key（Push 权限）。
+# 前置条件（一次性）：
+#   1. nuget.org 账户 → Trusted Publishing 里新建策略：
+#      Owner=CeSun，Repository=Ufbx.NET，Workflow=publish-nuget.yml，
+#      Environment=production（必须与下面 job 的 environment 一致）。
+#   2. 仓库 Settings → Secrets and variables → Actions 里配置
+#      NUGET_USER —— nuget.org 的用户名/Profile name（不是邮箱）。
 
 name: publish-nuget
 
@@ -25,8 +28,15 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # 必须与 nuget.org 可信发布策略里填的「环境」一致，否则 OIDC 令牌的
+    # environment 声明为空、校验失败（Aura3D 的 pack.yml 同款要求）。
+    environment: production
+    # 可信发布必须显式授予 id-token: write，GitHub 才会为该 job 签发 OIDC 令牌。
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      # MinVer 需要完整历史与标签来计算版本（默认 shallow clone 会导致版本退化为 alpha）
+      # MinVer 需要完整历史与标签来计算版本（shallow clone 会让版本退化为 alpha）。
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -44,16 +54,21 @@ jobs:
         shell: bash
         run: ls -1 src/Ufbx.NET/bin/Release/*.nupkg src/Ufbx.NET/bin/Release/*.snupkg
 
+      # OIDC 令牌换取临时 API Key（有效期仅 1 小时），因此紧跟推送步骤。
+      - name: NuGet login (OIDC -> temp API key)
+        uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Push to nuget.org
         shell: bash
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           dotnet nuget push "src/Ufbx.NET/bin/Release/*.nupkg" \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --source https://api.nuget.org/v3/index.json \
-            --api-key "$NUGET_API_KEY" \
             --skip-duplicate
           dotnet nuget push "src/Ufbx.NET/bin/Release/*.snupkg" \
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
             --source https://api.nuget.org/v3/index.json \
-            --api-key "$NUGET_API_KEY" \
             --skip-duplicate
