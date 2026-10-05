@@ -1,0 +1,59 @@
+# Ufbx.NET NuGet 发布流水线。
+#
+# 版本号由 MinVer 从 git 标签推导（配置见 src/Ufbx.NET/Ufbx.NET.csproj）：
+#   - 推送标签 v0.23.1        -> 包版本 0.23.1（正式版）
+#   - 标签之后的提交          -> 0.23.1-pre.N.M 之类的预发布版
+#   - 从未打标签              -> 0.23.0-alpha.0.N
+#
+# 发布正式版：
+#   git tag v0.23.1 && git push origin v0.23.1
+#
+# 前置条件：仓库 Settings -> Secrets and variables -> Actions 里配置
+#   NUGET_API_KEY —— nuget.org 的 API key（Push 权限）。
+
+name: publish-nuget
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      # MinVer 需要完整历史与标签来计算版本（默认 shallow clone 会导致版本退化为 alpha）
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Pack
+        run: dotnet pack src/Ufbx.NET -c Release
+
+      - name: Show package version
+        shell: bash
+        run: ls -1 src/Ufbx.NET/bin/Release/*.nupkg src/Ufbx.NET/bin/Release/*.snupkg
+
+      - name: Push to nuget.org
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push "src/Ufbx.NET/bin/Release/*.nupkg" \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_API_KEY" \
+            --skip-duplicate
+          dotnet nuget push "src/Ufbx.NET/bin/Release/*.snupkg" \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_API_KEY" \
+            --skip-duplicate

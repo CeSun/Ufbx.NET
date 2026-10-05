@@ -7,7 +7,40 @@
     <RootNamespace>Ufbx.NET</RootNamespace>
     <AssemblyName>Ufbx.NET</AssemblyName>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+
+    <!-- NuGet 包元数据 -->
+    <Description>Pure C# port of ufbx v0.23.1 — a single-file FBX loader. No native dependencies, no P/Invoke, no third-party packages.</Description>
+    <Authors>CeSun</Authors>
+    <PackageProjectUrl>https://github.com/CeSun/Ufbx.NET</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CeSun/Ufbx.NET.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>fbx;ufbx;3d;mesh;geometry;loader;autodesk</PackageTags>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <!-- 版本号由 MinVer 从 git 标签推导：
+          标签 v0.23.1       -> 0.23.1
+          标签之后的提交     -> 0.23.1-pre.N.M
+          从未打标签         -> 0.23.0-alpha.0.N（MinVerMinimumMajorMinor 下限）
+       发布 CLI 见 tools/publish-nuget.sh。 -->
+  <PropertyGroup>
+    <MinVerMinimumMajorMinor>0.23</MinVerMinimumMajorMinor>
+    <!-- MinVer 8.0.0 的默认前缀在诊断日志里是空串（v 开头的标签会被当成
+         "non-version tag" 忽略），必须显式声明 "v"。 -->
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MinVer" Version="8.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
   <!-- The data model lives in Model/ (split by element category, audited against ufbx.h).
        An older single-file `Types.cs` port duplicated 274 of those type definitions and was
        moved to _quarantine/Types.duplicate.cs.txt for arbitration; it is NOT compiled.
